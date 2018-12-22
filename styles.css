@@ -1,0 +1,22 @@
+/* EagleSoftworks
+2018 Diffusion Simulation Styles */
+
+body {
+    background-color: #232326;
+    color: white;
+}
+
+.shelf {
+    width: 750px;
+    background-color: white;
+    border-radius: 10px;
+}
+
+#myCanvas {
+    width: 750px; 
+    height: 500px;
+    border-width: 2px; 
+    border-radius: 10px;
+    border-style: solid;
+    border-color: #000000;
+}
