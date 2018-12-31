@@ -9,10 +9,34 @@
     </head>
     
     <body>
-    	<h1>Under Construction</h1>
-    	<h2>Molecular Diffusion Simulation</h2>
-
-        <canvas id="myCanvas" width="750px" height="500px"> </canvas> 
+        <div id="mainPage">
+        	<h1>Under Construction</h1>
+        	<h2>Molecular Diffusion Simulation</h2>
+        
+            <canvas id="myCanvas" class="border" width="750px" height="500px"> </canvas> 
+            
+            <div id="buttonShelf" class="border">
+                <div class="column">
+                    <p>Temp: <span>0</span>°C</p>
+                    <button>+</button>
+                    <button>-</button>
+                    <p>Molecule 1 Size: <span>5</span>px</p>
+                    <input type="range" min="5" max="25">
+                    <p>Molecule 2 Size: <span>5</span>px</p>
+                    <input type="range" min="5" max="25">
+                </div>
+                <div class="column">
+                    <button onclick="togglePort1()"><span id="port1-span">Close</span> Port 1</button>
+                    <button onclick="togglePort2()"><span id="port2-span">Close</span> Port 2</button>
+                    <button><span>Enable</span> Active Transport</button>
+                </div>
+                <div class="column">
+                    <p><span>0</span> : <span>0</span></p>
+                    <button onclick="toggleTimer()"><span id="timerBtn-span">Start</span> Timer</button>
+                    <button>Reset Simulation</button>
+                </div>
+            </div>
+        </div>
         
         <script src="./script.js"></script>
     </body>

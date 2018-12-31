@@ -1,21 +1,58 @@
 /* EagleSoftworks
 2018 Diffusion Simulation Styles */
 
+* {
+    padding: 0;
+    margin: 3px;
+}
+
 body {
     background-color: #232326;
     color: white;
 }
 
-.shelf {
-    width: 750px;
-    background-color: white;
-    border-radius: 10px;
+p {
+    color: black;
+    font-size: 18px;
 }
 
-#myCanvas {
-    background-color: white;
+button {
+    padding: 10px 15px;
+    font-size: 16px;
+    font-weight: bold;
+    border-width: 3px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+}
+
+#mainPage {
+    /*somehow center page later*/
+    margin: 0 auto;
+}
+
+.border {
     border-width: 2px; 
     border-radius: 10px;
     border-style: solid;
     border-color: #000000;
 }
+
+#myCanvas {
+    background-color: white;
+}
+
+#buttonShelf {
+    width: 750px;
+    height: 250px;
+    background-color: white;
+    text-align: center;
+}
+
+.column {
+    width: 240px;
+    height: 100%;
+    float: left;
+    margin-top: 20px;
+}
+
+
