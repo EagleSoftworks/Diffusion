@@ -20,10 +20,10 @@
                     <p>Temp: <span>0</span>°C</p>
                     <button>+</button>
                     <button>-</button>
-                    <p>Molecule 1 Size: <span>5</span>px</p>
-                    <input type="range" min="5" max="25">
-                    <p>Molecule 2 Size: <span>5</span>px</p>
-                    <input type="range" min="5" max="25">
+                    <p>Molecule 1 Size: <span id="mole1-span">50</span>px</p>
+                    <input id="mole1-slider" type="range" min="30" value="50" max="70">
+                    <p>Molecule 2 Size: <span id="mole2-span">15</span>px</p>
+                    <input id="mole2-slider" type="range" min="5" value="15" max="25">
                 </div>
                 <div class="column">
                     <button onclick="togglePort1()"><span id="port1-span">Close</span> Port 1</button>
@@ -31,9 +31,10 @@
                     <button><span>Enable</span> Active Transport</button>
                 </div>
                 <div class="column">
-                    <p><span>0</span> : <span>0</span></p>
+                    <p>Seconds:</p>
+                    <input id="timer-input" type="number" value="30" min="1">
                     <button onclick="toggleTimer()"><span id="timerBtn-span">Start</span> Timer</button>
-                    <button>Reset Simulation</button>
+                    <button onclick="particleStartLocations()">Reset Simulation</button>
                 </div>
             </div>
         </div>

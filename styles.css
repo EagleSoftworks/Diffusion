@@ -26,7 +26,8 @@ button {
 }
 
 #mainPage {
-    /*somehow center page later*/
+    width: 760px;
+    text-align: center;
     margin: 0 auto;
 }
 
@@ -43,7 +44,7 @@ button {
 
 #buttonShelf {
     width: 750px;
-    height: 250px;
+    min-height: 250px;
     background-color: white;
     text-align: center;
 }
@@ -53,6 +54,15 @@ button {
     height: 100%;
     float: left;
     margin-top: 20px;
+}
+
+#timer-input {
+    width: 80px;
+    height: 30px;
+    margin: 3px 20px 10px 20px;
+    font-size: 20px;
+    text-align: center;
+    border-radius: 10px;
 }
 
 
