@@ -4,15 +4,43 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
+        <link rel="stylesheet" type="text/css" href="styles.css">
         <title>Molecular Diffusion Simulation</title>
     </head>
+    
     <body>
-    	<h1>Under Construction</h1>
-    	<body bgcolor="#232326">
-    	<body text="white">
-
-    	<canvas id="myCanvas" width="750" height="500" style="border:1px solid #000000;"> </canvas> 
-    	
-    	<h2>Molecular Diffusion Simulation</h2>
+        <div id="mainPage">
+        	<h1>Under Construction</h1>
+        	<h2>Molecular Diffusion Simulation</h2>
+        
+            <canvas id="myCanvas" class="border" width="750px" height="500px"> </canvas> 
+            
+            <div id="buttonShelf" class="border">
+                <div class="column">
+                    <p>Temp: <span>0</span>°C</p>
+                    <button>+</button>
+                    <button>-</button>
+                    <p>Molecule 1 Size: <span id="mole1-span">50</span>px</p>
+                    <input id="mole1-slider" type="range" min="30" value="50" max="70">
+                    <p>Molecule 2 Size: <span id="mole2-span">15</span>px</p>
+                    <input id="mole2-slider" type="range" min="5" value="15" max="25">
+                </div>
+                <div class="column">
+                    <button onclick="togglePort1()"><span id="port1-span">Close</span> Port 1</button>
+                    <button onclick="togglePort2()"><span id="port2-span">Close</span> Port 2</button>
+                    <button><span>Enable</span> Active Transport</button>
+                </div>
+                <div class="column">
+                    <p>Seconds:</p>
+                    <input id="timer-input" type="number" value="30" min="1">
+                    <button onclick="toggleTimer()"><span id="timerBtn-span">Start</span> Timer</button>
+                    <button onclick="particleStartLocations()">Reset Simulation</button>
+                </div>
+            </div>
+        </div>
+        
+        <script src="./script.js"></script>
     </body>
 </html>
+
+
