@@ -11,6 +11,19 @@ body {
     color: white;
 }
 
+div {
+    margin: 0;
+}
+
+h1 {
+    margin: 0;    
+    /*this margin somehow goes outside the div, h2 doesn't*/
+}
+
+h2 {
+    margin: 5px;
+}
+
 p {
     color: black;
     font-size: 18px;
@@ -22,13 +35,25 @@ button {
     font-weight: bold;
     border-width: 3px;
     border-radius: 15px;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
 }
 
 #mainPage {
-    width: 760px;
+    width: 1030px;
+    min-height: 635px;
     text-align: center;
     margin: 0 auto;
+}
+
+#titleCanvasDiv {
+    width: 760px;
+    min-height: 625px;
+    float: left;
+}
+
+#titlesDiv {
+    height: 125px;
+    max-height: 125px;
 }
 
 .border {
@@ -40,18 +65,20 @@ button {
 
 #myCanvas {
     background-color: white;
+    margin: 0;
 }
 
 #buttonShelf {
-    width: 750px;
-    min-height: 250px;
+    width: 255px;
+    min-height: 625px;
     background-color: white;
     text-align: center;
+    float: right;
+    margin: 0;
 }
 
 .column {
-    width: 240px;
-    height: 100%;
+    width: 245px;
     float: left;
     margin-top: 20px;
 }

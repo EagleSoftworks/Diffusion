@@ -10,10 +10,14 @@
     
     <body>
         <div id="mainPage">
-        	<h1>Under Construction</h1>
-        	<h2>Molecular Diffusion Simulation</h2>
-        
-            <canvas id="myCanvas" class="border" width="750px" height="500px"> </canvas> 
+            <div id="titleCanvasDiv">
+                <div id="titlesDiv">
+                	<h1>Under Construction</h1>
+                	<h2>Molecular Diffusion Simulation</h2>
+                </div>
+                
+                <canvas id="myCanvas" class="border" width="750px" height="500px"> </canvas> 
+            </div>
             
             <div id="buttonShelf" class="border">
                 <div class="column">
@@ -28,7 +32,7 @@
                 <div class="column">
                     <button onclick="togglePort1()"><span id="port1-span">Close</span> Port 1</button>
                     <button onclick="togglePort2()"><span id="port2-span">Close</span> Port 2</button>
-                    <button><span>Enable</span> Active Transport</button>
+                    <button onclick="toggleAT()"><span id="at-span">Enable</span> Active Transport</button>
                 </div>
                 <div class="column">
                     <p>Seconds:</p>

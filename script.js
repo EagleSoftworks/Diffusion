@@ -25,7 +25,7 @@ function drawCircle(x, y, radius, color) {
     ctx.fillStyle = color;
     ctx.fill();
 }
-
+// Draws a rectangle
 function drawRectangle(x, y, width, height, color) {
     ctx.beginPath();
     ctx.rect(x, y, width, height);
@@ -33,6 +33,18 @@ function drawRectangle(x, y, width, height, color) {
     ctx.stroke();
     ctx.fillStyle = color;
     ctx.fill();
+}
+// Draws an arc
+function drawArc(x1, y1, x2, y2, x3, y3, color) {
+    ctx.beginPath();
+    // Start point (1)
+    ctx.moveTo(x1, y1);
+    // Middle point (2) and end point (3)
+    ctx.quadraticCurveTo(x2, y2, x3, y3);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 6;
+    ctx.stroke();
+    ctx.lineWidth = 1;
 }
 
 // Variables for molecule 1 size slider
@@ -84,6 +96,44 @@ function drawLilParticle(x, y) {
     drawCircle(x, y, mole2Radius, darkGradient);
 }
 
+spanAT = document.getElementById("at-span");
+var activeAT = false;
+function toggleAT() {
+    if (activeAT === false) {
+        activeAT = true;
+        spanAT.textContent = "Disable";
+    }
+    else {
+        activeAT = false;
+        spanAT.textContent = "Enable";
+    }
+    // Update canvas if needed
+    updateDrawing();
+}
+
+// AT gradient doesn't need to move, so it's outside the function
+let gradientAT = ctx.createLinearGradient(325, 0, 425, 0);
+gradientAT.addColorStop(0, "#115fc4");
+gradientAT.addColorStop(0.25, "#6409a0");
+gradientAT.addColorStop(0.75, "#ba09b4");
+gradientAT.addColorStop(1, "#c4092c");
+
+// Draws AT, with gradient if AT is enabled
+function drawAT(midpoint, y) {
+    // If AT not active then no gradient
+    let colorAT = "#55066d";
+    // change later to AT 
+    if (activeAT === true) {
+        colorAT = gradientAT;
+    }
+
+    // Draw arcs for AT
+    drawArc(midpoint-45, y-25, midpoint, y+50, midpoint+60, y-30, colorAT);
+    drawArc(midpoint-45, y+25, midpoint, y-50, midpoint+60, y+30, colorAT);
+    drawArc(midpoint-50, y+15, midpoint+10, y-60, midpoint+65, y-10, colorAT);
+    drawArc(midpoint-50, y-15, midpoint+10, y+60, midpoint+65, y+10, colorAT);
+}
+
 // Var to easily change wall thickness and keep wall centered
 var wallWidth = 30;
 var wallX = (canvasWidth - wallWidth) / 2;
@@ -110,7 +160,9 @@ function drawWall() {
         drawPort(wallX, 280);
     }
     
-    // Draws active transoprt too
+    // Draws active transport
+    drawAT(canvasWidth/2, 50);
+    drawAT(canvasWidth/2, 450);
 }
 
 // Returns a negative or positive number for random movement
@@ -143,31 +195,31 @@ var xCo = [200, 250, 300, 100, 150, 250];
 var yCo = [200, 425, 300, 350, 75, 20];
 // Function to fill the coordinate arrays in an orderly fashion
 function particleStartLocations() {
-    // Clear arrays
-    xCo = [];
-    yCo = [];
-    // Big particles
-    xCo = [175, 175];
-    yCo = [125, 375];
-    // Lil particles
-    // R for rows and C for columns
-    for (let r = 0; r < 10; r++) {
-        for (let c = 0; c < 7; c++) {
-            // Add lil particle coordinates to arrays
-            xCo.push(25 + (c * 50));
-            yCo.push(25 + (r * 50));
-            
-            // Remove lil particle coordinates if near big particle
-            if ((2 <= c && c <= 4) && ((1 <= r && r <= 3) || (6 <= r && r <= 8))) {
-                xCo.pop();
-                yCo.pop();
+    if (timerOn === false) {
+        // Clear arrays
+        xCo = [];
+        yCo = [];
+        // Big particles
+        xCo = [160, 160];
+        yCo = [125, 375];
+        // Lil particles
+        // R for rows and C for columns
+        for (let r = 0; r < 10; r++) {
+            for (let c = 0; c < 7; c++) {
+                // Add lil particle coordinates to arrays
+                xCo.push(25 + (c * 45));
+                yCo.push(25 + (r * 50));
+                
+                // Remove lil particle coordinates if near big particle
+                if ((2 <= c && c <= 4) && ((1 <= r && r <= 3) || (6 <= r && r <= 8))) {
+                    xCo.pop();
+                    yCo.pop();
+                }
             }
         }
+        draw(); 
     }
-    draw();
 }
-// Initial draw to popuate arrays and draw something on the canvas
-particleStartLocations();
 
 // Moves all the particles
 function moveParticles() {
@@ -251,6 +303,9 @@ function tick() {
         toggleTimer();
     }
 }
+
+// Initally populate arrays with coordinates after timerOn exists
+particleStartLocations();
 
 // Variables for port 1
 const port1Span = document.getElementById("port1-span");
