@@ -76,9 +76,9 @@ mole2Slider.oninput = function() {
 function drawBigParticle(x, y) {
     // Linear gradient for style
     let redGradient = ctx.createLinearGradient(x-75, 0, x+100, 0);
-    redGradient.addColorStop(0, "#9b0909");
+    redGradient.addColorStop(0, "#540000");
     redGradient.addColorStop(0.5, "red");
-    redGradient.addColorStop(1, "white");
+    redGradient.addColorStop(1, "#ffac75");
     
     // Use radius from slider, starting value is 50
     drawCircle(x, y, mole1Radius, redGradient);
@@ -87,8 +87,8 @@ function drawBigParticle(x, y) {
 // Draws a little particle
 function drawLilParticle(x, y) {
     let darkGradient = ctx.createRadialGradient(x, y, mole2Radius*(2/3), x, y, mole2Radius*(2/15));
-    darkGradient.addColorStop(0, "black");
-    darkGradient.addColorStop(1, "green"); // inside color
+    darkGradient.addColorStop(0, "#002602");
+    darkGradient.addColorStop(0.75, "#47772c"); // inside color
     
     // Use radius from slider, starting value is 10
     drawCircle(x, y, mole2Radius, darkGradient);
