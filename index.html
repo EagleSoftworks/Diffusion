@@ -21,9 +21,9 @@
             
             <div id="buttonShelf" class="border">
                 <div class="column">
-                    <p>Temp: <span>0</span>°C</p>
-                    <button>+</button>
-                    <button>-</button>
+                    <p>Temp: <span id="temp-span">50</span>&deg;C</p>
+                    <button onclick="minusTemp()">-</button>
+                    <button onclick="addTemp()">+</button>
                     <p>Molecule 1 Size: <span id="mole1-span">50</span>px</p>
                     <input id="mole1-slider" type="range" min="30" value="50" max="70">
                     <p>Molecule 2 Size: <span id="mole2-span">15</span>px</p>
