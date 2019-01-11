@@ -1,9 +1,7 @@
 // EagleSoftworks
-// 2018 - Diffusion Simulation Javascript
+// 2019 - Diffusion Simulation Javascript
 
-// Almost every line comes up as a warning until the 100 limit is met
-// This expands that limit because it's annoying:
-// jshint maxerr:200
+// A science simulation which demonstrates how molecules move via diffusion
 
 // This sets the context of the canvas
 const canvas = document.getElementById("myCanvas");
@@ -95,6 +93,34 @@ function drawLilParticle(x, y) {
     // Use radius from slider, starting value is 10
     drawCircle(x, y, mole2Radius, darkGradient);
 }
+
+/********************************************
+    Temperature Functions and Globals
+********************************************/
+
+var tempSpan = document.getElementById("temp-span");
+var temp = 50;
+
+// Adds/Subtracts 5 from temp
+// Speed is also changed here (is a fifth of temp)
+function minusTemp() {
+    if (temp > 25) {
+        temp = temp - 5;
+        speed = temp / 5;
+    }
+    tempSpan.textContent = temp;
+}
+function addTemp() {
+    if (temp < 75) {
+        temp = temp + 5;
+        speed = temp/5;
+    }
+    tempSpan.textContent = temp;
+}
+
+/********************************************
+    Active Transport Functions and Globals
+********************************************/
 
 spanAT = document.getElementById("at-span");
 var activeAT = false;
