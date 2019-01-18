@@ -4,15 +4,71 @@
 // A science simulation which demonstrates how molecules move via diffusion
 
 // This sets the context of the canvas
+/********************************************
+                UI ELEMENTS
+********************************************/
 const canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
+
+// Variables for molecule 1 size slider
+const mole1Slider = document.getElementById("mole1-slider");
+const mole1Span = document.getElementById("mole1-span");
+
+// Variables for molecule 2 size slider
+const mole2Slider = document.getElementById("mole2-slider");
+const mole2Span = document.getElementById("mole2-span");
+
+const tempSpan = document.getElementById("temp-span");
+
+const spanAT = document.getElementById("at-span");
+
+// Variables for port 1
+const port1Span = document.getElementById("port1-span");
+
+// Variables for port 2
+const port2Span = document.getElementById("port2-span");
+
+// Variables for the timer toggle
+const timerBtnSpan = document.getElementById("timerBtn-span");
+
+// Ticking variables, timerTicking for starting/stopping interval on tick()
+const timerInput = document.getElementById("timer-input");
+
+/********************************************
+                GLOBALS
+********************************************/
 
 // Height and width are in html so js can access them
 const canvasHeight = canvas.height;
 const canvasWidth = canvas.width;
 
+// Var to easily change wall thickness and keep wall centered
+var wallWidth = 30;
+var wallX = (canvasWidth - wallWidth) / 2;
+
+// canvasDrawing for starting/stopping interval for draw()
+var canvasDrawing;
+
+var mole1Radius = mole1Slider.value;
+var mole2Radius = mole2Slider.value;
+
 // Change the speed here to make the particles move faster/slower
+var temp = 50;
 var speed = 5;
+
+var activeAT = false;
+// AT gradient doesn't need to move, so it's outside the function
+let gradientAT = ctx.createLinearGradient(325, 0, 425, 0);
+gradientAT.addColorStop(0, "#115fc4");
+gradientAT.addColorStop(0.25, "#6409a0");
+gradientAT.addColorStop(0.75, "#ba09b4");
+gradientAT.addColorStop(1, "#c4092c");
+
+var port1Open = false;
+var port2Open = false;
+
+var timerOn = false;
+var timerTicking;
 
 // Draws a circle
 function drawCircle(x, y, radius, color) {
@@ -45,10 +101,6 @@ function drawArc(x1, y1, x2, y2, x3, y3, color) {
     ctx.lineWidth = 1;
 }
 
-// Variables for molecule 1 size slider
-const mole1Slider = document.getElementById("mole1-slider");
-const mole1Span = document.getElementById("mole1-span");
-var mole1Radius = mole1Slider.value;
 // Change on input function for molecule 1 slider
 mole1Slider.oninput = function() {
     // Set molecule 1 radius based off of slider
@@ -58,10 +110,7 @@ mole1Slider.oninput = function() {
     // Update canvas if needed
     updateDrawing();
 };
-// Variables for molecule 2 size slider
-const mole2Slider = document.getElementById("mole2-slider");
-const mole2Span = document.getElementById("mole2-span");
-var mole2Radius = mole2Slider.value;
+
 // Change on input function for molecule 2 slider
 mole2Slider.oninput = function() {
     // Set molecule 2 radius based off of slider
@@ -76,9 +125,9 @@ mole2Slider.oninput = function() {
 function drawBigParticle(x, y) {
     // Linear gradient for style
     let redGradient = ctx.createLinearGradient(x-75, 0, x+100, 0);
-    redGradient.addColorStop(0, "#9b0909");
+    redGradient.addColorStop(0, "#540000");
     redGradient.addColorStop(0.5, "red");
-    redGradient.addColorStop(1, "white");
+    redGradient.addColorStop(1, "#ffac75");
     
     // Use radius from slider, starting value is 50
     drawCircle(x, y, mole1Radius, redGradient);
@@ -87,8 +136,8 @@ function drawBigParticle(x, y) {
 // Draws a little particle
 function drawLilParticle(x, y) {
     let darkGradient = ctx.createRadialGradient(x, y, mole2Radius*(2/3), x, y, mole2Radius*(2/15));
-    darkGradient.addColorStop(0, "black");
-    darkGradient.addColorStop(1, "green"); // inside color
+    darkGradient.addColorStop(0, "#002602");
+    darkGradient.addColorStop(0.75, "#47772c"); // inside color
     
     // Use radius from slider, starting value is 10
     drawCircle(x, y, mole2Radius, darkGradient);
@@ -97,9 +146,6 @@ function drawLilParticle(x, y) {
 /********************************************
     Temperature Functions and Globals
 ********************************************/
-
-var tempSpan = document.getElementById("temp-span");
-var temp = 50;
 
 // Adds/Subtracts 5 from temp
 // Speed is also changed here (is a fifth of temp)
@@ -122,8 +168,6 @@ function addTemp() {
     Active Transport Functions and Globals
 ********************************************/
 
-spanAT = document.getElementById("at-span");
-var activeAT = false;
 function toggleAT() {
     if (activeAT === false) {
         activeAT = true;
@@ -136,13 +180,6 @@ function toggleAT() {
     // Update canvas if needed
     updateDrawing();
 }
-
-// AT gradient doesn't need to move, so it's outside the function
-let gradientAT = ctx.createLinearGradient(325, 0, 425, 0);
-gradientAT.addColorStop(0, "#115fc4");
-gradientAT.addColorStop(0.25, "#6409a0");
-gradientAT.addColorStop(0.75, "#ba09b4");
-gradientAT.addColorStop(1, "#c4092c");
 
 // Draws AT, with gradient if AT is enabled
 function drawAT(midpoint, y) {
@@ -159,10 +196,6 @@ function drawAT(midpoint, y) {
     drawArc(midpoint-50, y+15, midpoint+10, y-60, midpoint+65, y-10, colorAT);
     drawArc(midpoint-50, y-15, midpoint+10, y+60, midpoint+65, y+10, colorAT);
 }
-
-// Var to easily change wall thickness and keep wall centered
-var wallWidth = 30;
-var wallX = (canvasWidth - wallWidth) / 2;
 
 // Draws a closed port
 function drawPort(x, y) {
@@ -216,9 +249,6 @@ function isInCanvas(x, y) {
     return false;
 }
 
-// Starter locations of particles for testing with fewer particles
-var xCo = [200, 250, 300, 100, 150, 250];
-var yCo = [200, 425, 300, 350, 75, 20];
 // Function to fill the coordinate arrays in an orderly fashion
 function particleStartLocations() {
     if (timerOn === false) {
@@ -289,8 +319,7 @@ function draw() {
         drawLilParticle(xCo[i], yCo[i]);
     }
 }
-// canvasDrawing for starting/stopping interval for draw()
-var canvasDrawing;
+
 // Update canvas only if timer is not on, update if neeeded
 function updateDrawing() {
     if (timerOn === false) {
@@ -298,9 +327,6 @@ function updateDrawing() {
     }
 }
 
-// Variables for the timer toggle
-const timerBtnSpan = document.getElementById("timerBtn-span");
-var timerOn = false;
 // Toggles timer (and drawing) on/off
 function toggleTimer() {
     if (timerOn === false && timerInput.value > 0) {
@@ -316,9 +342,7 @@ function toggleTimer() {
         clearInterval(timerTicking);
     }
 }
-// Ticking variables, timerTicking for starting/stopping interval on tick()
-const timerInput = document.getElementById("timer-input");
-var timerTicking;
+
 // Tick() incriments the timer
 function tick() {
     if (timerInput.value > 1) {
@@ -333,9 +357,6 @@ function tick() {
 // Initally populate arrays with coordinates after timerOn exists
 particleStartLocations();
 
-// Variables for port 1
-const port1Span = document.getElementById("port1-span");
-var port1Open = false;
 // Toggles port 1 open/close
 function togglePort1() {
     if (port1Open === false) {
@@ -349,9 +370,7 @@ function togglePort1() {
     // Update canvas if needed
     updateDrawing();
 }
-// Variables for port 2
-const port2Span = document.getElementById("port2-span");
-var port2Open = false;
+
 // Toggles port 2 open/close
 function togglePort2() {
     if (port2Open === false) {
