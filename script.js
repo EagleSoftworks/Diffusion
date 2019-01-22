@@ -286,22 +286,7 @@ function addTemp() {
     }
 
     function isCollidingWithWallOrPort(radius, x, y) {
-        if (x + radius > wallX && x - radius < wallX + wallWidth) {
-            if ( (y + radius > 125 && y - radius < 220)) {
-                return false;
-            }
-            if ((y + radius > 280 && y - radius < 375)) {
-                return false;
-            }
-
-            return true;
-
-
-        } else {
-            return false;
-        }
-        // add code
-        //return false;
+        return false;
     }
 
     function isCollidingWithAT(x, y) {
