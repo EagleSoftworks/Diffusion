@@ -52,6 +52,11 @@ var canvasDrawing;
 var mole1Radius = mole1Slider.value;
 var mole2Radius = mole2Slider.value;
 
+// Enum for molecule type, frozen so that it isn't manipulated later:
+// https://stackoverflow.com/questions/287903/what-is-the-preferred-syntax-for-defining-enums-in-javascript
+var moleculeEnum = {"bigMolecule":1, "smallMolecule":2};
+Object.freeze(moleculeEnum);
+
 // Change the speed here to make the particles move faster/slower
 var temp = 50;
 var speed = 5;
@@ -280,9 +285,34 @@ function addTemp() {
         }
     }
 
+    function isCollidingWithWallOrPort(radius, x, y) {
+        if (x + radius > wallX && x - radius < wallX + wallWidth) {
+            if ( (y + radius > 125 && y - radius < 220)) {
+                return false;
+            }
+            if ((y + radius > 280 && y - radius < 375)) {
+                return false;
+            }
+
+            return true;
+
+
+        } else {
+            return false;
+        }
+        // add code
+        //return false;
+    }
+
+    function isCollidingWithAT(x, y) {
+        // add code
+        return false;
+    }
+
 class Molecule {
 
     constructor(moleculeType, startX, startY) {
+        this.moleculeType = moleculeType;
         this.x = startX;
         this.y = startY;
     }
@@ -291,41 +321,36 @@ class Molecule {
 
     /************************************/
 
-    static isCollidingWithWallOrPort() {
-        // add code
-        return false;
-    }
-
-    static isCollidingWithAT() {
-        // add code
-        return false;
-    }
-
     /************************************/
 
     updateMolecule() {
-        let tempX, tempY;
+        let tempX, tempY, radius;
             /* Add x y ranges for checks so lil particles far right/left don't have to go
             through the checks for the wall/AT and particles high up won't have to go 
             through checks for lower AT*/
             
+        if (this.moleculeType == moleculeEnum.bigMolecule) {
+            radius = mole1Radius;
+        } else {
+            radius = mole2Radius;
+        }
+
         do {
                 // Picks a new location for the particle
                 tempX = this.x + randomCo();
                 tempY = this.y + randomCo();
                 // If new location is outside canvas, loop
         } 
-        while (!isInCanvas(tempX, tempY));
+        while (!isInCanvas(tempX, tempY) || isCollidingWithWallOrPort(radius,tempX, tempY));
             
         // Set particle coordinates to valid new location 
         this.x = tempX;
         this.y = tempY;
     }
 
-    // type is passed in because this.moleculeType was not working
-    draw(type) {
+    draw() {
         // Draws Large molecule type
-        if (type == 1) {
+        if (this.moleculeType == moleculeEnum.bigMolecule) {
             // Linear gradient for style
             let gradient = ctx.createLinearGradient(this.x-75, 0, this.x+100, 0);
             gradient.addColorStop(0, "#540000");
@@ -351,13 +376,13 @@ function particleStartLocations() {
         molecules = [];
 
         // puts the two big molecules in the first two slots
-        molecules = [new Molecule(1, 160, 125), new Molecule(1, 160, 375)];
+        molecules = [new Molecule(moleculeEnum.bigMolecule, 160, 125), new Molecule(moleculeEnum.bigMolecule, 160, 375)];
 
         // iterates over rows (r) and columns (c)
         for (let r = 0; r < 10; r++) {
             for (let c = 0; c < 7; c++) {
                 // adds a small molecule at a specific interval
-                molecules.push(new Molecule(2, (25 + (c * 45)), (25 + (r * 50))));
+                molecules.push(new Molecule(moleculeEnum.smallMolecule, (25 + (c * 45)), (25 + (r * 50))));
 
                 // removes small molecule if near the big one
                 if ((2 <= c && c <= 4) && ((1 <= r && r <= 3) || (6 <= r && r <= 8))) {
@@ -384,12 +409,7 @@ function draw() {
             molecules[i].updateMolecule();
         }
 
-        // draws them to the canvas
-        if (i < 2){
-            molecules[i].draw(1); // big molecules
-        } else {
-            molecules[i].draw(2); // small molecules
-        }
+        molecules[i].draw();
     }
 }
 
