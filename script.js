@@ -1,56 +1,167 @@
 // EagleSoftworks
-// 2018 - Diffusion Simulation Javascript
+// 2019 - Diffusion Simulation Javascript
 
-// Almost every line comes up as a warning until the 100 limit is met
-// This expands that limit because it's annoying:
-// jshint maxerr:200
+// A science simulation which demonstrates how molecules move via diffusion
 
 // This sets the context of the canvas
+/********************************************
+                UI ELEMENTS
+********************************************/
 const canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
+
+// Variables for molecule 1 size slider
+const mole1Slider = document.getElementById("mole1-slider");
+const mole1Span = document.getElementById("mole1-span");
+
+// Variables for molecule 2 size slider
+const mole2Slider = document.getElementById("mole2-slider");
+const mole2Span = document.getElementById("mole2-span");
+
+const tempSpan = document.getElementById("temp-span");
+
+const spanAT = document.getElementById("at-span");
+
+// Variables for port 1
+const port1Span = document.getElementById("port1-span");
+
+// Variables for port 2
+const port2Span = document.getElementById("port2-span");
+
+// Variables for including the big molecule
+const mole1BtnSpan = document.getElementById("mole1Visible-span");
+
+// Variables for the timer toggle
+const timerBtnSpan = document.getElementById("timerBtn-span");
+
+// Ticking variables, timerTicking for starting/stopping interval on tick()
+const timerInput = document.getElementById("timer-input");
+
+/********************************************
+                GLOBALS
+********************************************/
 
 // Height and width are in html so js can access them
 const canvasHeight = canvas.height;
 const canvasWidth = canvas.width;
 
+// Var to easily change wall thickness and keep wall centered
+var wallWidth = 30;
+var wallX = (canvasWidth - wallWidth) / 2;
+
+// canvasDrawing for starting/stopping interval for draw()
+var canvasDrawing;
+
+var mole1Radius = mole1Slider.value;
+var mole2Radius = mole2Slider.value;
+
+// Enum for molecule type, frozen so that it isn't manipulated later:
+// https://stackoverflow.com/questions/287903/what-is-the-preferred-syntax-for-defining-enums-in-javascript
+var moleculeEnum = {"bigMolecule":1, "smallMolecule":2};
+Object.freeze(moleculeEnum);
+
 // Change the speed here to make the particles move faster/slower
+var temp = 50;
 var speed = 5;
 
-// Draws a circle
-function drawCircle(x, y, radius, color) {
-    ctx.beginPath();
-    ctx.arc(x, y, radius, 0, 2 * Math.PI);
-    ctx.strokeStyle = color;
-    ctx.stroke();
-    ctx.fillStyle = color;
-    ctx.fill();
-}
-// Draws a rectangle
-function drawRectangle(x, y, width, height, color) {
-    ctx.beginPath();
-    ctx.rect(x, y, width, height);
-    ctx.strokeStyle = color;
-    ctx.stroke();
-    ctx.fillStyle = color;
-    ctx.fill();
-}
-// Draws an arc
-function drawArc(x1, y1, x2, y2, x3, y3, color) {
-    ctx.beginPath();
-    // Start point (1)
-    ctx.moveTo(x1, y1);
-    // Middle point (2) and end point (3)
-    ctx.quadraticCurveTo(x2, y2, x3, y3);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 6;
-    ctx.stroke();
-    ctx.lineWidth = 1;
-}
+var activeAT = false;
+// AT gradient doesn't need to move, so it's outside the function
+let gradientAT = ctx.createLinearGradient(325, 0, 425, 0);
+gradientAT.addColorStop(0, "#115fc4");
+gradientAT.addColorStop(0.25, "#6409a0");
+gradientAT.addColorStop(0.75, "#ba09b4");
+gradientAT.addColorStop(1, "#c4092c");
 
-// Variables for molecule 1 size slider
-const mole1Slider = document.getElementById("mole1-slider");
-const mole1Span = document.getElementById("mole1-span");
-var mole1Radius = mole1Slider.value;
+var port1Open = false;
+var port2Open = false;
+
+var molecule1Visible = true;
+
+var timerOn = false;
+var timerTicking;
+
+/********************************************
+            DRAWING FUNCTIONS
+********************************************/
+
+// Draw object for the functions that draw on the canvas
+draw = {
+    // Base function for drawing a circle
+    circle: function(x, y, radius, color) {
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, 2 * Math.PI);
+        ctx.strokeStyle = color;
+        ctx.stroke();
+        ctx.fillStyle = color;
+        ctx.fill();
+    },
+    // Base function for drawing a rectangle
+    rectangle: function(x, y, width, height, color) {
+        ctx.beginPath();
+        ctx.rect(x, y, width, height);
+        ctx.strokeStyle = color;
+        ctx.stroke();
+        ctx.fillStyle = color;
+        ctx.fill();
+    },
+    // Base function for drawing an arc
+    arc: function(x1, y1, x2, y2, x3, y3, color) {
+        ctx.beginPath();
+        // Start point (1)
+        ctx.moveTo(x1, y1);
+        // Middle point (2) and end point (3)
+        ctx.quadraticCurveTo(x2, y2, x3, y3);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 6;
+        ctx.stroke();
+        ctx.lineWidth = 1;
+    },
+    // Draws AT, with gradient if AT is enabled
+    activeTransport: function(midpoint, y) {
+        // If AT not active then no gradient
+        let colorAT = "#55066d";
+        // If AT active then there is a gradient
+        if (activeAT === true) {
+            colorAT = gradientAT;
+        }
+    
+        // Draw arcs for AT
+        draw.arc(midpoint-45, y-25, midpoint, y+50, midpoint+60, y-30, colorAT);
+        draw.arc(midpoint-45, y+25, midpoint, y-50, midpoint+60, y+30, colorAT);
+        draw.arc(midpoint-50, y+15, midpoint+10, y-60, midpoint+65, y-10, colorAT);
+        draw.arc(midpoint-50, y-15, midpoint+10, y+60, midpoint+65, y+10, colorAT);
+    },
+    // Draws a closed port
+    port: function(x, y) {
+        draw.circle((wallWidth/2) + x, y, wallWidth/2, "orange");
+        draw.rectangle(x, y, wallWidth, 75, "orange");
+        draw.circle((wallWidth/2) + x, 75 + y, wallWidth/2, "orange");
+    },
+    // Draws walls depending on what is enabled/disabled
+    wall: function() {
+        // Dark walls
+        draw.rectangle(wallX, 0, wallWidth, 145, "grey"); 
+        draw.rectangle(wallX, 220, wallWidth, 60, "grey"); // Leaves 75px for ports
+        draw.rectangle(wallX, 355, wallWidth, 145, "grey");
+        
+        // Draw ports if ports are open
+        if (port1Open === true) {
+            draw.port(wallX, 145);
+        }
+        if (port2Open === true) {
+            draw.port(wallX, 280);
+        }
+        
+        // Draws active transport
+        draw.activeTransport(canvasWidth/2, 70);
+        draw.activeTransport(canvasWidth/2, 430);
+    }
+};
+
+/********************************************
+            TOGGLES AND INPUT
+********************************************/
+
 // Change on input function for molecule 1 slider
 mole1Slider.oninput = function() {
     // Set molecule 1 radius based off of slider
@@ -60,10 +171,7 @@ mole1Slider.oninput = function() {
     // Update canvas if needed
     updateDrawing();
 };
-// Variables for molecule 2 size slider
-const mole2Slider = document.getElementById("mole2-slider");
-const mole2Span = document.getElementById("mole2-span");
-var mole2Radius = mole2Slider.value;
+
 // Change on input function for molecule 2 slider
 mole2Slider.oninput = function() {
     // Set molecule 2 radius based off of slider
@@ -74,30 +182,6 @@ mole2Slider.oninput = function() {
     updateDrawing();
 };
 
-// Draws a big red particle
-function drawBigParticle(x, y) {
-    // Linear gradient for style
-    let redGradient = ctx.createLinearGradient(x-75, 0, x+100, 0);
-    redGradient.addColorStop(0, "#9b0909");
-    redGradient.addColorStop(0.5, "red");
-    redGradient.addColorStop(1, "white");
-    
-    // Use radius from slider, starting value is 50
-    drawCircle(x, y, mole1Radius, redGradient);
-}
-
-// Draws a little particle
-function drawLilParticle(x, y) {
-    let darkGradient = ctx.createRadialGradient(x, y, mole2Radius*(2/3), x, y, mole2Radius*(2/15));
-    darkGradient.addColorStop(0, "black");
-    darkGradient.addColorStop(1, "green"); // inside color
-    
-    // Use radius from slider, starting value is 10
-    drawCircle(x, y, mole2Radius, darkGradient);
-}
-
-spanAT = document.getElementById("at-span");
-var activeAT = false;
 function toggleAT() {
     if (activeAT === false) {
         activeAT = true;
@@ -111,176 +195,12 @@ function toggleAT() {
     updateDrawing();
 }
 
-// AT gradient doesn't need to move, so it's outside the function
-let gradientAT = ctx.createLinearGradient(325, 0, 425, 0);
-gradientAT.addColorStop(0, "#115fc4");
-gradientAT.addColorStop(0.25, "#6409a0");
-gradientAT.addColorStop(0.75, "#ba09b4");
-gradientAT.addColorStop(1, "#c4092c");
-
-// Draws AT, with gradient if AT is enabled
-function drawAT(midpoint, y) {
-    // If AT not active then no gradient
-    let colorAT = "#55066d";
-    // change later to AT 
-    if (activeAT === true) {
-        colorAT = gradientAT;
-    }
-
-    // Draw arcs for AT
-    drawArc(midpoint-45, y-25, midpoint, y+50, midpoint+60, y-30, colorAT);
-    drawArc(midpoint-45, y+25, midpoint, y-50, midpoint+60, y+30, colorAT);
-    drawArc(midpoint-50, y+15, midpoint+10, y-60, midpoint+65, y-10, colorAT);
-    drawArc(midpoint-50, y-15, midpoint+10, y+60, midpoint+65, y+10, colorAT);
-}
-
-// Var to easily change wall thickness and keep wall centered
-var wallWidth = 30;
-var wallX = (canvasWidth - wallWidth) / 2;
-
-// Draws a closed port
-function drawPort(x, y) {
-    drawCircle((wallWidth/2) + x, 10 + y, wallWidth/2, "orange");
-    drawRectangle(x, 10 + y, wallWidth, 75, "orange");
-    drawCircle((wallWidth/2) + x, 85 + y, wallWidth/2, "orange");
-}
-
-// Draws walls depending on what is enabled/disabled
-function drawWall() {
-    // Dark walls
-    drawRectangle(wallX, 0, wallWidth, 125, "grey");
-    drawRectangle(wallX, 220, wallWidth, 60, "grey");
-    drawRectangle(wallX, 375, wallWidth, 125, "grey");
-    
-    // Draw ports if ports are open
-    if (port1Open === true) {
-        drawPort(wallX, 125);
-    }
-    if (port2Open === true) {
-        drawPort(wallX, 280);
-    }
-    
-    // Draws active transport
-    drawAT(canvasWidth/2, 50);
-    drawAT(canvasWidth/2, 450);
-}
-
-// Returns a negative or positive number for random movement
-function randomCo() {
-    // Speed + random value so there's always some movement
-    let distance = speed + (Math.random() * Math.floor(speed));
-    
-    // Picks a direction of negative or positive
-    let direction = (Math.random());
-    if (direction > 0.5) {
-        direction = 1;
-    }
-    else {
-        direction = -1;
-    }
-    
-    return (distance * direction);
-}
-
-// Checks if the x and y coordinates are inside the canvas
-function isInCanvas(x, y) {
-    if (x > 0 && y > 0 && y < canvasHeight && x < canvasWidth) {
-        return true;
-    }
-    return false;
-}
-
-// Starter locations of particles for testing with fewer particles
-var xCo = [200, 250, 300, 100, 150, 250];
-var yCo = [200, 425, 300, 350, 75, 20];
-// Function to fill the coordinate arrays in an orderly fashion
-function particleStartLocations() {
-    if (timerOn === false) {
-        // Clear arrays
-        xCo = [];
-        yCo = [];
-        // Big particles
-        xCo = [160, 160];
-        yCo = [125, 375];
-        // Lil particles
-        // R for rows and C for columns
-        for (let r = 0; r < 10; r++) {
-            for (let c = 0; c < 7; c++) {
-                // Add lil particle coordinates to arrays
-                xCo.push(25 + (c * 45));
-                yCo.push(25 + (r * 50));
-                
-                // Remove lil particle coordinates if near big particle
-                if ((2 <= c && c <= 4) && ((1 <= r && r <= 3) || (6 <= r && r <= 8))) {
-                    xCo.pop();
-                    yCo.pop();
-                }
-            }
-        }
-        draw(); 
-    }
-}
-
-// Moves all the particles
-function moveParticles() {
-    let tempX, tempY;
-    for(let i = 0; i < xCo.length; i++) {
-        /* Add x y ranges for checks so lil particles far right/left don't have to go
-        through the checks for the wall/AT and particles high up won't have to go 
-        through checks for lower AT*/
-        
-        do {
-            // Picks a new location for the particle
-            tempX = xCo[i] + randomCo();
-            tempY = yCo[i] + randomCo();
-            // If new location is outside canvas, loop
-        } 
-        while (!isInCanvas(tempX, tempY));
-        
-        // Set particle coordinates to valid new location 
-        xCo[i] = tempX;
-        yCo[i] = tempY;
-    }
-}
-
-// Draws things
-function draw() {
-    // Resets canvas
-    ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-    
-    drawWall();
-
-    // Only move particles if timer is on
-    if (timerOn === true) {
-        moveParticles();
-    }
-    
-    // Draws the particles
-    drawBigParticle(xCo[0], yCo[0]);
-    drawBigParticle(xCo[1], yCo[1]);
-    for (let i = 2; i < xCo.length; i++) {
-        drawLilParticle(xCo[i], yCo[i]);
-    }
-}
-// canvasDrawing for starting/stopping interval for draw()
-var canvasDrawing;
-// Update canvas only if timer is not on, update if neeeded
-function updateDrawing() {
-    if (timerOn === false) {
-        draw();
-    }
-}
-
-// Variables for the timer toggle
-const timerBtnSpan = document.getElementById("timerBtn-span");
-var timerOn = false;
 // Toggles timer (and drawing) on/off
 function toggleTimer() {
     if (timerOn === false && timerInput.value > 0) {
         timerOn = true;
         timerBtnSpan.textContent = "Pause";
-        canvasDrawing = setInterval(draw, 75);
+        canvasDrawing = setInterval(drawCanvas, 75);
         timerTicking = setInterval(tick, 1000);
     }
     else {
@@ -290,26 +210,7 @@ function toggleTimer() {
         clearInterval(timerTicking);
     }
 }
-// Ticking variables, timerTicking for starting/stopping interval on tick()
-const timerInput = document.getElementById("timer-input");
-var timerTicking;
-// Tick() incriments the timer
-function tick() {
-    if (timerInput.value > 1) {
-        timerInput.value--;
-    }
-    else if (timerInput.value <= 1) {
-        timerInput.value = 0;
-        toggleTimer();
-    }
-}
 
-// Initally populate arrays with coordinates after timerOn exists
-particleStartLocations();
-
-// Variables for port 1
-const port1Span = document.getElementById("port1-span");
-var port1Open = false;
 // Toggles port 1 open/close
 function togglePort1() {
     if (port1Open === false) {
@@ -323,9 +224,7 @@ function togglePort1() {
     // Update canvas if needed
     updateDrawing();
 }
-// Variables for port 2
-const port2Span = document.getElementById("port2-span");
-var port2Open = false;
+
 // Toggles port 2 open/close
 function togglePort2() {
     if (port2Open === false) {
@@ -340,3 +239,202 @@ function togglePort2() {
     updateDrawing();
 }
 
+// Toggles big molecules on/off
+function toggleMolecule1() {
+    if (molecule1Visible === true) {
+        molecule1Visible = false;
+        mole1BtnSpan.textContent = "Include";
+    }
+    else {
+        molecule1Visible = true;
+        mole1BtnSpan.textContent = "Exclude";
+    }
+    updateDrawing();
+}
+
+/********************************************
+    Temperature Functions and Globals
+********************************************/
+
+// Adds/Subtracts 5 from temp
+// Speed is also changed here (is a fifth of temp)
+function minusTemp() {
+    if (temp > 25) {
+        temp = temp - 5;
+        speed = temp / 5;
+    }
+    tempSpan.textContent = temp;
+}
+function addTemp() {
+    if (temp < 75) {
+        temp = temp + 5;
+        speed = temp/5;
+    }
+    tempSpan.textContent = temp;
+}
+
+/********************************************
+    Active Transport Functions and Globals
+********************************************/
+
+    // Returns a negative or positive number for random movement
+    function randomCo() {
+        // Speed + random value so there's always some movement
+        let distance = speed + (Math.random() * Math.floor(speed));
+        
+        // Picks a direction of negative or positive
+        let direction = (Math.random());
+        if (direction > 0.5) {
+            direction = 1;
+        }
+        else {
+            direction = -1;
+        }
+        
+        return (distance * direction);
+    }
+
+        // Checks if the x and y coordinates are inside the canvas
+    function isInCanvas(x, y) {
+        if (x > 0 && y > 0 && y < canvasHeight && x < canvasWidth) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    function isCollidingWithWallOrPort(radius, x, y) {
+        return false;
+    }
+
+    function isCollidingWithAT(x, y) {
+        // add code
+        return false;
+    }
+
+class Molecule {
+
+    constructor(moleculeType, startX, startY) {
+        this.moleculeType = moleculeType;
+        this.x = startX;
+        this.y = startY;
+    }
+
+    /************************************/
+
+    /************************************/
+
+    /************************************/
+
+    updateMolecule() {
+        let tempX, tempY, radius;
+            /* Add x y ranges for checks so lil particles far right/left don't have to go
+            through the checks for the wall/AT and particles high up won't have to go 
+            through checks for lower AT*/
+        if ((this.moleculeType == moleculeEnum.bigMolecule && molecule1Visible === true) || this.moleculeType == moleculeEnum.smallMolecule) {
+            if (this.moleculeType == moleculeEnum.bigMolecule) {
+                radius = mole1Radius;
+            } else {
+                radius = mole2Radius;
+            }
+    
+            do {
+                // Picks a new location for the particle
+                tempX = this.x + randomCo();
+                tempY = this.y + randomCo();
+                // If new location is outside canvas, loop
+            } 
+            while (!isInCanvas(tempX, tempY) || isCollidingWithWallOrPort(radius,tempX, tempY));
+                
+            // Set particle coordinates to valid new location 
+            this.x = tempX;
+            this.y = tempY;
+        }
+    }
+
+    draw() {
+        // Draws Large molecule type
+        if (this.moleculeType == moleculeEnum.bigMolecule) {
+            if (molecule1Visible === true) {
+                // Linear gradient for style
+                let gradient = ctx.createLinearGradient(this.x-75, 0, this.x+100, 0);
+                gradient.addColorStop(0, "#540000");
+                gradient.addColorStop(0.5, "red");
+                gradient.addColorStop(1, "#ffac75");
+                
+                draw.circle(this.x, this.y, mole1Radius, gradient);
+            }
+        } else {
+            // Draws Small molecule type
+            let gradient = ctx.createRadialGradient(this.x, this.y, mole2Radius*(2/3), this.x, this.y, mole2Radius*(2/15));
+            gradient.addColorStop(0, "#002602");
+            gradient.addColorStop(0.75, "#47772c"); // inside color
+            
+            draw.circle(this.x, this.y, mole2Radius, gradient);
+        }
+    }
+}
+
+// Function to fill the coordinate arrays in an orderly fashion
+function particleStartLocations() {
+    if (timerOn === false) {
+        // Clear array
+        molecules = [];
+
+        // puts the two big molecules in the first two slots
+        molecules = [new Molecule(moleculeEnum.bigMolecule, 160, 125), new Molecule(moleculeEnum.bigMolecule, 160, 375)];
+
+        // iterates over rows (r) and columns (c)
+        for (let r = 0; r < 10; r++) {
+            for (let c = 0; c < 7; c++) {
+                // adds a small molecule at a specific interval
+                molecules.push(new Molecule(moleculeEnum.smallMolecule, (25 + (c * 45)), (25 + (r * 50))));
+
+                // removes small molecule if near the big one
+                if ((2 <= c && c <= 4) && ((1 <= r && r <= 3) || (6 <= r && r <= 8))) {
+                    molecules.pop();
+                }
+            }
+        }
+        drawCanvas(); 
+    }
+}
+
+// Draws things
+function drawCanvas() {
+    // Resets canvas
+    draw.rectangle(0, 0, canvasWidth, canvasHeight, "white");
+    
+    draw.wall();
+
+    // Iterates over all the molecules
+    for (let i = 0; i < molecules.length; i++) {
+        // updates movement if timer is on
+        if (timerOn === true) {
+            molecules[i].updateMolecule();
+        }
+
+        molecules[i].draw();
+    }
+}
+
+// Update canvas only if timer is not on, update if neeeded
+function updateDrawing() {
+    if (timerOn === false) {
+        drawCanvas();
+    }
+}
+
+// Tick() incriments the timer
+function tick() {
+    if (timerInput.value > 1) {
+        timerInput.value--;
+    }
+    else if (timerInput.value <= 1) {
+        timerInput.value = 0;
+        toggleTimer();
+    }
+}
+
+// Initally populate arrays with coordinates after timerOn exists
+particleStartLocations();
