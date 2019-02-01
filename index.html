@@ -20,21 +20,22 @@
             </div>
             
             <div id="buttonShelf" class="border">
-                <div class="column">
+                <div class="row">
+                    <button onclick="toggleMolecule1()"><span id="mole1Visible-span">Exclude</span> Molecule 1</button>
+                    <p>Molecule 1 Size: <span id="mole1-span">40</span>px</p>
+                    <input id="mole1-slider" type="range" min="30" value="40" max="50">
+                    <p>Molecule 2 Size: <span id="mole2-span">15</span>px</p>
+                    <input id="mole2-slider" type="range" min="5" value="15" max="25">
                     <p>Temp: <span id="temp-span">50</span>&deg;C</p>
                     <button onclick="minusTemp()">-</button>
                     <button onclick="addTemp()">+</button>
-                    <p>Molecule 1 Size: <span id="mole1-span">50</span>px</p>
-                    <input id="mole1-slider" type="range" min="30" value="50" max="70">
-                    <p>Molecule 2 Size: <span id="mole2-span">15</span>px</p>
-                    <input id="mole2-slider" type="range" min="5" value="15" max="25">
                 </div>
-                <div class="column">
+                <div class="row">
                     <button onclick="togglePort1()"><span id="port1-span">Close</span> Port 1</button>
                     <button onclick="togglePort2()"><span id="port2-span">Close</span> Port 2</button>
                     <button onclick="toggleAT()"><span id="at-span">Enable</span> Active Transport</button>
                 </div>
-                <div class="column">
+                <div class="row">
                     <p>Seconds:</p>
                     <input id="timer-input" type="number" value="30" min="1">
                     <button onclick="toggleTimer()"><span id="timerBtn-span">Start</span> Timer</button>
@@ -46,5 +47,3 @@
         <script src="./script.js"></script>
     </body>
 </html>
-
-

@@ -8,7 +8,6 @@
 
 body {
     background-color: #232326;
-    color: white;
 }
 
 div {
@@ -17,11 +16,13 @@ div {
 
 h1 {
     margin: 0;    
+    color: white;
     /*this margin somehow goes outside the div, h2 doesn't*/
 }
 
 h2 {
     margin: 5px;
+    color: white;
 }
 
 p {
@@ -30,7 +31,8 @@ p {
 }
 
 button {
-    padding: 10px 15px;
+    height: 40px;
+    padding: 0 15px;
     font-size: 16px;
     font-weight: bold;
     border-width: 3px;
@@ -77,7 +79,7 @@ button {
     margin: 0;
 }
 
-.column {
+.row {
     width: 245px;
     float: left;
     margin-top: 20px;
@@ -91,5 +93,3 @@ button {
     text-align: center;
     border-radius: 10px;
 }
-
-

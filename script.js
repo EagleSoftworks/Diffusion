@@ -28,6 +28,9 @@ const port1Span = document.getElementById("port1-span");
 // Variables for port 2
 const port2Span = document.getElementById("port2-span");
 
+// Variables for including the big molecule
+const mole1BtnSpan = document.getElementById("mole1Visible-span");
+
 // Variables for the timer toggle
 const timerBtnSpan = document.getElementById("timerBtn-span");
 
@@ -72,6 +75,8 @@ gradientAT.addColorStop(1, "#c4092c");
 var port1Open = false;
 var port2Open = false;
 
+var molecule1Visible = true;
+
 var timerOn = false;
 var timerTicking;
 
@@ -79,79 +84,79 @@ var timerTicking;
             DRAWING FUNCTIONS
 ********************************************/
 
-// Draws a circle
-function drawCircle(x, y, radius, color) {
-    ctx.beginPath();
-    ctx.arc(x, y, radius, 0, 2 * Math.PI);
-    ctx.strokeStyle = color;
-    ctx.stroke();
-    ctx.fillStyle = color;
-    ctx.fill();
-}
-// Draws a rectangle
-function drawRectangle(x, y, width, height, color) {
-    ctx.beginPath();
-    ctx.rect(x, y, width, height);
-    ctx.strokeStyle = color;
-    ctx.stroke();
-    ctx.fillStyle = color;
-    ctx.fill();
-}
-// Draws an arc
-function drawArc(x1, y1, x2, y2, x3, y3, color) {
-    ctx.beginPath();
-    // Start point (1)
-    ctx.moveTo(x1, y1);
-    // Middle point (2) and end point (3)
-    ctx.quadraticCurveTo(x2, y2, x3, y3);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 6;
-    ctx.stroke();
-    ctx.lineWidth = 1;
-}
-
-// Draws AT, with gradient if AT is enabled
-function drawAT(midpoint, y) {
-    // If AT not active then no gradient
-    let colorAT = "#55066d";
-    // change later to AT 
-    if (activeAT === true) {
-        colorAT = gradientAT;
-    }
-
-    // Draw arcs for AT
-    drawArc(midpoint-45, y-25, midpoint, y+50, midpoint+60, y-30, colorAT);
-    drawArc(midpoint-45, y+25, midpoint, y-50, midpoint+60, y+30, colorAT);
-    drawArc(midpoint-50, y+15, midpoint+10, y-60, midpoint+65, y-10, colorAT);
-    drawArc(midpoint-50, y-15, midpoint+10, y+60, midpoint+65, y+10, colorAT);
-}
-
-// Draws a closed port
-function drawPort(x, y) {
-    drawCircle((wallWidth/2) + x, 10 + y, wallWidth/2, "orange");
-    drawRectangle(x, 10 + y, wallWidth, 75, "orange");
-    drawCircle((wallWidth/2) + x, 85 + y, wallWidth/2, "orange");
-}
-
-// Draws walls depending on what is enabled/disabled
-function drawWall() {
-    // Dark walls
-    drawRectangle(wallX, 0, wallWidth, 125, "grey");
-    drawRectangle(wallX, 220, wallWidth, 60, "grey");
-    drawRectangle(wallX, 375, wallWidth, 125, "grey");
+// Draw object for the functions that draw on the canvas
+draw = {
+    // Base function for drawing a circle
+    circle: function(x, y, radius, color) {
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, 2 * Math.PI);
+        ctx.strokeStyle = color;
+        ctx.stroke();
+        ctx.fillStyle = color;
+        ctx.fill();
+    },
+    // Base function for drawing a rectangle
+    rectangle: function(x, y, width, height, color) {
+        ctx.beginPath();
+        ctx.rect(x, y, width, height);
+        ctx.strokeStyle = color;
+        ctx.stroke();
+        ctx.fillStyle = color;
+        ctx.fill();
+    },
+    // Base function for drawing an arc
+    arc: function(x1, y1, x2, y2, x3, y3, color) {
+        ctx.beginPath();
+        // Start point (1)
+        ctx.moveTo(x1, y1);
+        // Middle point (2) and end point (3)
+        ctx.quadraticCurveTo(x2, y2, x3, y3);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 6;
+        ctx.stroke();
+        ctx.lineWidth = 1;
+    },
+    // Draws AT, with gradient if AT is enabled
+    activeTransport: function(midpoint, y) {
+        // If AT not active then no gradient
+        let colorAT = "#55066d";
+        // If AT active then there is a gradient
+        if (activeAT === true) {
+            colorAT = gradientAT;
+        }
     
-    // Draw ports if ports are open
-    if (port1Open === true) {
-        drawPort(wallX, 125);
+        // Draw arcs for AT
+        draw.arc(midpoint-45, y-25, midpoint, y+50, midpoint+60, y-30, colorAT);
+        draw.arc(midpoint-45, y+25, midpoint, y-50, midpoint+60, y+30, colorAT);
+        draw.arc(midpoint-50, y+15, midpoint+10, y-60, midpoint+65, y-10, colorAT);
+        draw.arc(midpoint-50, y-15, midpoint+10, y+60, midpoint+65, y+10, colorAT);
+    },
+    // Draws a closed port
+    port: function(x, y) {
+        draw.circle((wallWidth/2) + x, y, wallWidth/2, "orange");
+        draw.rectangle(x, y, wallWidth, 75, "orange");
+        draw.circle((wallWidth/2) + x, 75 + y, wallWidth/2, "orange");
+    },
+    // Draws walls depending on what is enabled/disabled
+    wall: function() {
+        // Dark walls
+        draw.rectangle(wallX, 0, wallWidth, 145, "grey"); 
+        draw.rectangle(wallX, 220, wallWidth, 60, "grey"); // Leaves 75px for ports
+        draw.rectangle(wallX, 355, wallWidth, 145, "grey");
+        
+        // Draw ports if ports are open
+        if (port1Open === true) {
+            draw.port(wallX, 145);
+        }
+        if (port2Open === true) {
+            draw.port(wallX, 280);
+        }
+        
+        // Draws active transport
+        draw.activeTransport(canvasWidth/2, 70);
+        draw.activeTransport(canvasWidth/2, 430);
     }
-    if (port2Open === true) {
-        drawPort(wallX, 280);
-    }
-    
-    // Draws active transport
-    drawAT(canvasWidth/2, 50);
-    drawAT(canvasWidth/2, 450);
-}
+};
 
 /********************************************
             TOGGLES AND INPUT
@@ -195,7 +200,7 @@ function toggleTimer() {
     if (timerOn === false && timerInput.value > 0) {
         timerOn = true;
         timerBtnSpan.textContent = "Pause";
-        canvasDrawing = setInterval(draw, 75);
+        canvasDrawing = setInterval(drawCanvas, 75);
         timerTicking = setInterval(tick, 1000);
     }
     else {
@@ -231,6 +236,19 @@ function togglePort2() {
         port2Span.textContent = "Close";
     }
     // Update canvas if needed
+    updateDrawing();
+}
+
+// Toggles big molecules on/off
+function toggleMolecule1() {
+    if (molecule1Visible === true) {
+        molecule1Visible = false;
+        mole1BtnSpan.textContent = "Include";
+    }
+    else {
+        molecule1Visible = true;
+        mole1BtnSpan.textContent = "Exclude";
+    }
     updateDrawing();
 }
 
@@ -313,43 +331,46 @@ class Molecule {
             /* Add x y ranges for checks so lil particles far right/left don't have to go
             through the checks for the wall/AT and particles high up won't have to go 
             through checks for lower AT*/
-            
-        if (this.moleculeType == moleculeEnum.bigMolecule) {
-            radius = mole1Radius;
-        } else {
-            radius = mole2Radius;
-        }
-
-        do {
+        if ((this.moleculeType == moleculeEnum.bigMolecule && molecule1Visible === true) || this.moleculeType == moleculeEnum.smallMolecule) {
+            if (this.moleculeType == moleculeEnum.bigMolecule) {
+                radius = mole1Radius;
+            } else {
+                radius = mole2Radius;
+            }
+    
+            do {
                 // Picks a new location for the particle
                 tempX = this.x + randomCo();
                 tempY = this.y + randomCo();
                 // If new location is outside canvas, loop
-        } 
-        while (!isInCanvas(tempX, tempY) || isCollidingWithWallOrPort(radius,tempX, tempY));
-            
-        // Set particle coordinates to valid new location 
-        this.x = tempX;
-        this.y = tempY;
+            } 
+            while (!isInCanvas(tempX, tempY) || isCollidingWithWallOrPort(radius,tempX, tempY));
+                
+            // Set particle coordinates to valid new location 
+            this.x = tempX;
+            this.y = tempY;
+        }
     }
 
     draw() {
         // Draws Large molecule type
         if (this.moleculeType == moleculeEnum.bigMolecule) {
-            // Linear gradient for style
-            let gradient = ctx.createLinearGradient(this.x-75, 0, this.x+100, 0);
-            gradient.addColorStop(0, "#540000");
-            gradient.addColorStop(0.5, "red");
-            gradient.addColorStop(1, "#ffac75");
-            
-            drawCircle(this.x, this.y, mole1Radius, gradient);
+            if (molecule1Visible === true) {
+                // Linear gradient for style
+                let gradient = ctx.createLinearGradient(this.x-75, 0, this.x+100, 0);
+                gradient.addColorStop(0, "#540000");
+                gradient.addColorStop(0.5, "red");
+                gradient.addColorStop(1, "#ffac75");
+                
+                draw.circle(this.x, this.y, mole1Radius, gradient);
+            }
         } else {
             // Draws Small molecule type
             let gradient = ctx.createRadialGradient(this.x, this.y, mole2Radius*(2/3), this.x, this.y, mole2Radius*(2/15));
             gradient.addColorStop(0, "#002602");
             gradient.addColorStop(0.75, "#47772c"); // inside color
             
-            drawCircle(this.x, this.y, mole2Radius, gradient);
+            draw.circle(this.x, this.y, mole2Radius, gradient);
         }
     }
 }
@@ -375,17 +396,16 @@ function particleStartLocations() {
                 }
             }
         }
-        draw(); 
+        drawCanvas(); 
     }
 }
 
 // Draws things
-function draw() {
+function drawCanvas() {
     // Resets canvas
-    ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+    draw.rectangle(0, 0, canvasWidth, canvasHeight, "white");
     
-    drawWall();
+    draw.wall();
 
     // Iterates over all the molecules
     for (let i = 0; i < molecules.length; i++) {
@@ -401,7 +421,7 @@ function draw() {
 // Update canvas only if timer is not on, update if neeeded
 function updateDrawing() {
     if (timerOn === false) {
-        draw();
+        drawCanvas();
     }
 }
 
@@ -418,4 +438,3 @@ function tick() {
 
 // Initally populate arrays with coordinates after timerOn exists
 particleStartLocations();
-
