@@ -309,8 +309,16 @@ function addTemp() {
         }
     }
 
+
     function isCollidingWithWallOrPort(radius, x, y) {
-        return false;
+
+        if (x + radius < wallX || x - radius > wallX + wallWidth)
+            return false;
+        else if (port1Open == false && y + radius > 145 && y + radius < 220)
+            return false;
+        else if (port2Open == false && y + radius > 280 && y + radius < 335)
+            return false;
+        return true;
     }
 
     function isCollidingWithAT(x, y) {
@@ -350,7 +358,7 @@ class Molecule {
                 tempY = this.y + randomCo();
                 // If new location is outside canvas, loop
             } 
-            while (!isInCanvas(tempX, tempY) || isCollidingWithWallOrPort(radius,tempX, tempY));
+            while (!isInCanvas(tempX, tempY) || (isCollidingWithWallOrPort(radius,tempX, tempY)));
                 
             // Set particle coordinates to valid new location 
             this.x = tempX;
