@@ -249,6 +249,12 @@ function toggleMolecule1() {
         molecule1Visible = true;
         mole1BtnSpan.textContent = "Exclude";
     }
+
+    // If simulation has not started, update the new molecule start locations
+    if (!timerOn) {
+        particleStartLocations();
+    }
+
     updateDrawing();
 }
 
@@ -391,7 +397,7 @@ function particleStartLocations() {
                 molecules.push(new Molecule(moleculeEnum.smallMolecule, (25 + (c * 45)), (25 + (r * 50))));
 
                 // removes small molecule if near the big one
-                if ((2 <= c && c <= 4) && ((1 <= r && r <= 3) || (6 <= r && r <= 8))) {
+                if (molecule1Visible && (2 <= c && c <= 4) && ((1 <= r && r <= 3) || (6 <= r && r <= 8))) {
                     molecules.pop();
                 }
             }
