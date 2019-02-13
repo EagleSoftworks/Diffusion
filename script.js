@@ -249,6 +249,12 @@ function toggleMolecule1() {
         molecule1Visible = true;
         mole1BtnSpan.textContent = "Exclude";
     }
+
+    // If simulation has not started, update the new molecule start locations
+    if (!timerOn) {
+        particleStartLocations();
+    }
+
     updateDrawing();
 }
 
@@ -303,8 +309,16 @@ function addTemp() {
         }
     }
 
+
     function isCollidingWithWallOrPort(radius, x, y) {
-        return false;
+
+        if (x + radius < wallX || x - radius > wallX + wallWidth)
+            return false;
+        else if (port1Open == false && y + radius > 145 && y + radius < 220)
+            return false;
+        else if (port2Open == false && y + radius > 280 && y + radius < 335)
+            return false;
+        return true;
     }
 
     function isCollidingWithAT(x, y) {
@@ -344,7 +358,7 @@ class Molecule {
                 tempY = this.y + randomCo();
                 // If new location is outside canvas, loop
             } 
-            while (!isInCanvas(tempX, tempY) || isCollidingWithWallOrPort(radius,tempX, tempY));
+            while (!isInCanvas(tempX, tempY) || (isCollidingWithWallOrPort(radius,tempX, tempY)));
                 
             // Set particle coordinates to valid new location 
             this.x = tempX;
@@ -391,7 +405,7 @@ function particleStartLocations() {
                 molecules.push(new Molecule(moleculeEnum.smallMolecule, (25 + (c * 45)), (25 + (r * 50))));
 
                 // removes small molecule if near the big one
-                if ((2 <= c && c <= 4) && ((1 <= r && r <= 3) || (6 <= r && r <= 8))) {
+                if (molecule1Visible && (2 <= c && c <= 4) && ((1 <= r && r <= 3) || (6 <= r && r <= 8))) {
                     molecules.pop();
                 }
             }
