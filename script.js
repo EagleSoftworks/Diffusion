@@ -126,7 +126,7 @@ draw = {
         if (activeAT === true) {
             colorAT = gradientAT;
         }
-    
+        
         // Draw arcs for AT
         draw.arc(midpoint-45, y-25, midpoint, y+50, midpoint+60, y-30, colorAT);
         draw.arc(midpoint-45, y+25, midpoint, y-50, midpoint+60, y+30, colorAT);
@@ -153,6 +153,9 @@ draw = {
         if (port2Open === false) {
             draw.port(wallX, 280);
         }
+        
+        //draw.rectangle(wallX+wallWidth, 30, 50, 80, "black");
+        //draw.rectangle(wallX + wallWidth, 390, 50, 80, "black");
         
         // Draws active transport
         draw.activeTransport(canvasWidth/2, 70);
@@ -311,7 +314,7 @@ function addTemp() {
         }
     }
 
-    function isCollidingWithWall(radius, x, y) {
+    function isInWall(radius, x, y) {
         if (x < (wallX-radius) || (wallX + wallWidth + radius) < x)
             return false;
         return true;
@@ -327,8 +330,18 @@ function addTemp() {
         }
         return false;
     }
-    function isCollidingWithAT(x, y) {
-        // add code
+    
+    // Checks if molecule is near AT input
+    function isInAT(ATNum, radius, x, y) {
+        if (activeAT === false || (wallX + wallWidth) > x || x > (wallX + wallWidth + 40 + radius)){
+            return false;
+        }
+        else if (ATNum == "1" && (40-radius) <= y && y <= (100+radius)) {
+            return true; 
+        }
+        else if (ATNum == "2" && (400-radius) <= y && y <= (460+radius)) {
+            return true;
+        }
         return false;
     }
 
@@ -368,10 +381,7 @@ class Molecule {
             
             // Only do other checks if molecule is in a certain range
             if (this.x >= (wallX - radius) && this.x <= (440 + radius)) {
-                /*if ((this.x+radius) > wallXEnd) {
-                    // AT stuff
-                }*/
-                if (isCollidingWithWall(radius, this.x, this.y)) {
+                if (isInWall(radius, this.x, this.y)) {
                     // If molecule's inside the port, move it so it's not hitting the top or bottom
                     if (isInPort(1, -Math.abs(randomY), this.y)) {
                         if (this.y < (145 + radius)) {
@@ -403,6 +413,16 @@ class Molecule {
                     }
                     //clearInterval(canvasDrawing);
                     //clearInterval(timerTicking);
+                }
+                else if (this.x > (wallXEnd)) {
+                    if (isInAT(1, radius, this.x, this.y)) {
+                        this.x = 325 - radius;
+                        this.y = 70;
+                    }
+                    else if (isInAT(2, radius, this.x, this.y)) {
+                        this.x = 325 - radius;
+                        this.y = 430;
+                    }
                 }
             }
         }
