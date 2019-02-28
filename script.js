@@ -3,6 +3,7 @@
 
 // A science simulation which demonstrates how molecules move via diffusion
 
+// jshint maxerr:300
 // This sets the context of the canvas
 /********************************************
                 UI ELEMENTS
@@ -46,8 +47,9 @@ const canvasHeight = canvas.height;
 const canvasWidth = canvas.width;
 
 // Var to easily change wall thickness and keep wall centered
-var wallWidth = 30;
-var wallX = (canvasWidth - wallWidth) / 2;
+const wallWidth = 50;
+const wallX = (canvasWidth - wallWidth) / 2;
+const wallXEnd = wallX + wallWidth;
 
 // canvasDrawing for starting/stopping interval for draw()
 var canvasDrawing;
@@ -72,8 +74,8 @@ gradientAT.addColorStop(0.25, "#6409a0");
 gradientAT.addColorStop(0.75, "#ba09b4");
 gradientAT.addColorStop(1, "#c4092c");
 
-var port1Open = false;
-var port2Open = false;
+var port1Open = true;
+var port2Open = true;
 
 var molecule1Visible = true;
 
@@ -124,7 +126,7 @@ draw = {
         if (activeAT === true) {
             colorAT = gradientAT;
         }
-    
+        
         // Draw arcs for AT
         draw.arc(midpoint-45, y-25, midpoint, y+50, midpoint+60, y-30, colorAT);
         draw.arc(midpoint-45, y+25, midpoint, y-50, midpoint+60, y+30, colorAT);
@@ -145,12 +147,15 @@ draw = {
         draw.rectangle(wallX, 355, wallWidth, 145, "grey");
         
         // Draw ports if ports are open
-        if (port1Open === true) {
+        if (port1Open === false) {
             draw.port(wallX, 145);
         }
-        if (port2Open === true) {
+        if (port2Open === false) {
             draw.port(wallX, 280);
         }
+        
+        //draw.rectangle(wallX+wallWidth, 30, 50, 80, "black");
+        //draw.rectangle(wallX + wallWidth, 390, 50, 80, "black");
         
         // Draws active transport
         draw.activeTransport(canvasWidth/2, 70);
@@ -200,7 +205,7 @@ function toggleTimer() {
     if (timerOn === false && timerInput.value > 0) {
         timerOn = true;
         timerBtnSpan.textContent = "Pause";
-        canvasDrawing = setInterval(drawCanvas, 75);
+        canvasDrawing = setInterval(drawCanvas, 100);
         timerTicking = setInterval(tick, 1000);
     }
     else {
@@ -215,11 +220,11 @@ function toggleTimer() {
 function togglePort1() {
     if (port1Open === false) {
         port1Open = true;
-        port1Span.textContent = "Open";
+        port1Span.textContent = "Close";
     }
     else {
         port1Open = false;
-        port1Span.textContent = "Close";
+        port1Span.textContent = "Open";
     }
     // Update canvas if needed
     updateDrawing();
@@ -229,11 +234,11 @@ function togglePort1() {
 function togglePort2() {
     if (port2Open === false) {
         port2Open = true;
-        port2Span.textContent = "Open";
+        port2Span.textContent = "Close";
     }
     else {
         port2Open = false;
-        port2Span.textContent = "Close";
+        port2Span.textContent = "Open";
     }
     // Update canvas if needed
     updateDrawing();
@@ -300,29 +305,43 @@ function addTemp() {
         return (distance * direction);
     }
 
-        // Checks if the x and y coordinates are inside the canvas
-    function isInCanvas(x, y) {
-        if (x > 0 && y > 0 && y < canvasHeight && x < canvasWidth) {
+    // Checks if the x and y coordinates are inside the canvas
+    function isInCanvas(radius, x, y) {
+        if (x > (0+radius-1) && y > (0+radius-1) && y < (canvasHeight-radius+1) && x < (canvasWidth-radius+1)) {
             return true;
         } else {
             return false;
         }
     }
 
-
-    function isCollidingWithWallOrPort(radius, x, y) {
-
-        if (x + radius < wallX || x - radius > wallX + wallWidth)
-            return false;
-        else if (port1Open == false && y + radius > 145 && y + radius < 220)
-            return false;
-        else if (port2Open == false && y + radius > 280 && y + radius < 335)
+    function isInWall(radius, x, y) {
+        if (x < (wallX-radius) || (wallX + wallWidth + radius) < x)
             return false;
         return true;
     }
 
-    function isCollidingWithAT(x, y) {
-        // add code
+    // Checks if molecule x y are in a given port
+    function isInPort(portNum, radius, y) {
+        if (portNum == "1" && port1Open === true && y > (145+radius) && y < (220-radius)) {
+            return true; 
+        }
+        else if (portNum == "2" && port2Open === true && y > (280+radius) && y < (335-radius)) {
+            return true;
+        }
+        return false;
+    }
+    
+    // Checks if molecule is near AT input
+    function isInAT(ATNum, radius, x, y) {
+        if (activeAT === false || (wallX + wallWidth) > x || x > (wallX + wallWidth + 40 + radius)){
+            return false;
+        }
+        else if (ATNum == "1" && (40-radius) <= y && y <= (100+radius)) {
+            return true; 
+        }
+        else if (ATNum == "2" && (400-radius) <= y && y <= (460+radius)) {
+            return true;
+        }
         return false;
     }
 
@@ -341,28 +360,89 @@ class Molecule {
     /************************************/
 
     updateMolecule() {
-        let tempX, tempY, radius;
-            /* Add x y ranges for checks so lil particles far right/left don't have to go
-            through the checks for the wall/AT and particles high up won't have to go 
-            through checks for lower AT*/
-        if ((this.moleculeType == moleculeEnum.bigMolecule && molecule1Visible === true) || this.moleculeType == moleculeEnum.smallMolecule) {
-            if (this.moleculeType == moleculeEnum.bigMolecule) {
-                radius = mole1Radius;
-            } else {
-                radius = mole2Radius;
+        let randomX, randomY, radius;
+        if (this.moleculeType == moleculeEnum.smallMolecule) {
+            radius = parseInt(mole2Radius);
+            
+            // Random added value in a variable so it can be removed
+            randomX = randomCo();
+            randomY = randomCo();
+            this.x += randomX;
+            this.y += randomY;
+            
+            // Only looks to see if X is inside the canvas, go the other way
+            if (!isInCanvas(radius, this.x, 200)) {
+                this.x -= (randomX * 2);
             }
-    
-            do {
-                // Picks a new location for the particle
-                tempX = this.x + randomCo();
-                tempY = this.y + randomCo();
-                // If new location is outside canvas, loop
-            } 
-            while (!isInCanvas(tempX, tempY) || (isCollidingWithWallOrPort(radius,tempX, tempY)));
-                
-            // Set particle coordinates to valid new location 
-            this.x = tempX;
-            this.y = tempY;
+            // Only looks to see if Y is inside the canvas, go the other way
+            if (!isInCanvas(radius, 200, this.y)) {
+                this.y -= (randomY * 2);
+            }
+            
+            // Only do other checks if molecule is in a certain range
+            if (this.x >= (wallX - radius) && this.x <= (440 + radius)) {
+                if (isInWall(radius, this.x, this.y)) {
+                    // If molecule's inside the port, move it so it's not hitting the top or bottom
+                    if (isInPort(1, -Math.abs(randomY), this.y)) {
+                        if (this.y < (145 + radius)) {
+                            this.y = (145 + radius);
+                        }
+                        else if (this.y > (220 - radius)) {
+                            this.y = (220 - radius);
+                        }
+                    }
+                    else if (isInPort(2, -Math.abs(randomY), this.y)) {
+                        if (this.y < (280 + radius)) {
+                            this.y = 280 + radius;
+                        }
+                        else if (this.y > (335 - radius)) {
+                            this.y = 335 - radius;
+                        }
+                    }
+                    // Move molecules away from the wall
+                    else {
+                        // Check for x or y, then adjust accordingly
+                        if (this.x < 375) {
+                            // Sets molecule outside wall
+                            this.x = wallX - radius;
+                        }
+                        else {
+                            // Fix this to do the same as the other
+                            this.x = wallX + wallWidth + radius;
+                        }
+                    }
+                    //clearInterval(canvasDrawing);
+                    //clearInterval(timerTicking);
+                }
+                else if (this.x > (wallXEnd)) {
+                    if (isInAT(1, radius, this.x, this.y)) {
+                        this.x = 325 - radius;
+                        this.y = 70;
+                    }
+                    else if (isInAT(2, radius, this.x, this.y)) {
+                        this.x = 325 - radius;
+                        this.y = 430;
+                    }
+                }
+            }
+        }
+        // Separated big molecule checks
+        else if (this.moleculeType == moleculeEnum.bigMolecule && molecule1Visible === true) {
+            radius = parseInt(mole1Radius);
+            
+            randomX = randomCo();
+            randomY = randomCo();
+            this.x += randomX;
+            this.y += randomY;
+            
+            // Only looks to see if X is inside the canvas, go the other way
+            if (!isInCanvas(radius, this.x, 200) || this.x > (wallX-radius)) {
+                this.x -= (randomX * 2);
+            }
+            // Only looks to see if Y is inside the canvas, go the other way
+            if (!isInCanvas(radius, 200, this.y)) {
+                this.y -= (randomY * 2);
+            }
         }
     }
 
