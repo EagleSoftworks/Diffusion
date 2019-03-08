@@ -21,6 +21,9 @@ const mole2Span = document.getElementById("mole2-span");
 
 const tempSpan = document.getElementById("temp-span");
 
+const mole1AmountSpan = document.getElementById("numOfMol1-span");
+var mole1Amount = 2;
+
 const spanAT = document.getElementById("at-span");
 
 // Variables for port 1
@@ -284,6 +287,32 @@ function addTemp() {
     tempSpan.textContent = temp;
 }
 
+/********************************/
+
+function addMol1() {
+    if (mole1Amount < 4) {
+        mole1Amount = mole1Amount + 1;
+    }
+
+    mole1AmountSpan.textContent = mole1Amount;
+
+    if (!timerOn) {
+        particleStartLocations();
+    }
+}
+
+function minusMol1() {
+    if (mole1Amount > 0) {
+        mole1Amount = mole1Amount - 1;
+    }
+
+    mole1AmountSpan.textContent = mole1Amount;
+
+    if (!timerOn) {
+        particleStartLocations();
+    }
+}
+
 /********************************************
     Active Transport Functions and Globals
 ********************************************/
@@ -475,18 +504,65 @@ function particleStartLocations() {
         // Clear array
         molecules = [];
 
-        // puts the two big molecules in the first two slots
-        molecules = [new Molecule(moleculeEnum.bigMolecule, 160, 125), new Molecule(moleculeEnum.bigMolecule, 160, 375)];
+        // Adds the large molecules
+        switch (mole1Amount) {
+            // One Large Molecule
+            case 1:
+                molecules = [new Molecule(moleculeEnum.bigMolecule, 160, 125)];
+                break;
+            // Two Large Molecules
+            case 2:
+                molecules = [new Molecule(moleculeEnum.bigMolecule, 160, 125), new Molecule(moleculeEnum.bigMolecule, 160, 375)];
+                break;
+            // Three Large Molecules
+            case 3:
+                molecules = [new Molecule(moleculeEnum.bigMolecule, 160, 100), new Molecule(moleculeEnum.bigMolecule, 160, 250), new Molecule(moleculeEnum.bigMolecule, 160, 400)];
+                break;
+            // Four Large Molecules
+            case 4:
+                molecules = [new Molecule(moleculeEnum.bigMolecule, 70, 70), new Molecule(moleculeEnum.bigMolecule, 70, 425),
+                                new Molecule(moleculeEnum.bigMolecule, 250, 70), new Molecule(moleculeEnum.bigMolecule, 250, 425)];
+                break;
+            default:
+                break;
+        }
 
-        // iterates over rows (r) and columns (c)
+
+        // Populates the molecule table with small molecules, removes extra small molecules to prevent overlap
         for (let r = 0; r < 10; r++) {
             for (let c = 0; c < 7; c++) {
                 // adds a small molecule at a specific interval
                 molecules.push(new Molecule(moleculeEnum.smallMolecule, (25 + (c * 45)), (25 + (r * 50))));
 
-                // removes small molecule if near the big one
-                if (molecule1Visible && (2 <= c && c <= 4) && ((1 <= r && r <= 3) || (6 <= r && r <= 8))) {
-                    molecules.pop();
+                if (!(mole1Amount == 0)) {
+                    switch (mole1Amount) {
+                        case 1:
+                            // removes small molecule if near the big one
+                            if (molecule1Visible && (2 <= c && c <= 4) && ((1 <= r && r <= 3))) {
+                                molecules.pop();
+                            }
+                            break;
+                        case 2:
+                            // removes small molecule if near the big ones
+                            if (molecule1Visible && (2 <= c && c <= 4) && ((1 <= r && r <= 3) || (6 <= r && r <= 8))) {
+                                molecules.pop();
+                            }
+                            break;
+                        case 3:
+                             // removes small molecule if near the big ones
+                            if (molecule1Visible && (2 <= c && c <= 4) && ((1 <= r && r <= 3) || (4 <= r && r <= 6) || (6 <= r && r <= 8))) {
+                                molecules.pop();
+                            }
+                            break;
+                        case 4:
+                            // removes small molecule if near the big ones
+                            if (molecule1Visible && ((0 <= c && c <= 2) || (4 <= c && c <= 6)) && ((0 <= r && r <= 2) || (7 <= r && r <= 9))) {
+                                molecules.pop();
+                            }
+                            break;
+                        default:
+                            break;
+                        }
                 }
             }
         }

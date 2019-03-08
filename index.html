@@ -21,7 +21,10 @@
             
             <div id="buttonShelf" class="border">
                 <div class="row">
-                    <button onclick="toggleMolecule1()"><span id="mole1Visible-span">Exclude</span> Molecule 1</button>
+                    <p># of Molecule 1: <span id="numOfMol1-span">2</span></p>
+                    <button onclick="minusMol1()">-</button>
+                    <button onclick="addMol1()">+</button>
+                    
                     <p>Molecule 1 Size: <span id="mole1-span">40</span>px</p>
                     <input id="mole1-slider" type="range" min="30" value="40" max="50">
                     <p>Molecule 2 Size: <span id="mole2-span">15</span>px</p>
