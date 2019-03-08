@@ -80,8 +80,6 @@ gradientAT.addColorStop(1, "#c4092c");
 var port1Open = true;
 var port2Open = true;
 
-var molecule1Visible = true;
-
 var timerOn = false;
 var timerTicking;
 
@@ -244,25 +242,6 @@ function togglePort2() {
         port2Span.textContent = "Open";
     }
     // Update canvas if needed
-    updateDrawing();
-}
-
-// Toggles big molecules on/off
-function toggleMolecule1() {
-    if (molecule1Visible === true) {
-        molecule1Visible = false;
-        mole1BtnSpan.textContent = "Include";
-    }
-    else {
-        molecule1Visible = true;
-        mole1BtnSpan.textContent = "Exclude";
-    }
-
-    // If simulation has not started, update the new molecule start locations
-    if (!timerOn) {
-        particleStartLocations();
-    }
-
     updateDrawing();
 }
 
@@ -456,7 +435,7 @@ class Molecule {
             }
         }
         // Separated big molecule checks
-        else if (this.moleculeType == moleculeEnum.bigMolecule && molecule1Visible === true) {
+        else if (this.moleculeType == moleculeEnum.bigMolecule) {
             radius = parseInt(mole1Radius);
             
             randomX = randomCo();
@@ -478,15 +457,13 @@ class Molecule {
     draw() {
         // Draws Large molecule type
         if (this.moleculeType == moleculeEnum.bigMolecule) {
-            if (molecule1Visible === true) {
-                // Linear gradient for style
-                let gradient = ctx.createLinearGradient(this.x-75, 0, this.x+100, 0);
-                gradient.addColorStop(0, "#540000");
-                gradient.addColorStop(0.5, "red");
-                gradient.addColorStop(1, "#ffac75");
+            // Linear gradient for style
+            let gradient = ctx.createLinearGradient(this.x-75, 0, this.x+100, 0);
+            gradient.addColorStop(0, "#540000");
+            gradient.addColorStop(0.5, "red");
+            gradient.addColorStop(1, "#ffac75");
                 
-                draw.circle(this.x, this.y, mole1Radius, gradient);
-            }
+            draw.circle(this.x, this.y, mole1Radius, gradient);
         } else {
             // Draws Small molecule type
             let gradient = ctx.createRadialGradient(this.x, this.y, mole2Radius*(2/3), this.x, this.y, mole2Radius*(2/15));
@@ -562,7 +539,7 @@ function particleStartLocations() {
                             break;
                         default:
                             break;
-                        }
+                    }
                 }
             }
         }
