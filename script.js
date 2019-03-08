@@ -515,25 +515,25 @@ function particleStartLocations() {
                     switch (mole1Amount) {
                         case 1:
                             // removes small molecule if near the big one
-                            if (molecule1Visible && (2 <= c && c <= 4) && ((1 <= r && r <= 3))) {
+                            if ((2 <= c && c <= 4) && ((1 <= r && r <= 3))) {
                                 molecules.pop();
                             }
                             break;
                         case 2:
                             // removes small molecule if near the big ones
-                            if (molecule1Visible && (2 <= c && c <= 4) && ((1 <= r && r <= 3) || (6 <= r && r <= 8))) {
+                            if ((2 <= c && c <= 4) && ((1 <= r && r <= 3) || (6 <= r && r <= 8))) {
                                 molecules.pop();
                             }
                             break;
                         case 3:
                              // removes small molecule if near the big ones
-                            if (molecule1Visible && (2 <= c && c <= 4) && ((1 <= r && r <= 3) || (4 <= r && r <= 6) || (6 <= r && r <= 8))) {
+                            if ((2 <= c && c <= 4) && ((1 <= r && r <= 3) || (4 <= r && r <= 6) || (6 <= r && r <= 8))) {
                                 molecules.pop();
                             }
                             break;
                         case 4:
                             // removes small molecule if near the big ones
-                            if (molecule1Visible && ((0 <= c && c <= 2) || (4 <= c && c <= 6)) && ((0 <= r && r <= 2) || (7 <= r && r <= 9))) {
+                            if (((0 <= c && c <= 2) || (4 <= c && c <= 6)) && ((0 <= r && r <= 2) || (7 <= r && r <= 9))) {
                                 molecules.pop();
                             }
                             break;
