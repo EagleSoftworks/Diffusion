@@ -21,6 +21,9 @@ const mole2Span = document.getElementById("mole2-span");
 
 const tempSpan = document.getElementById("temp-span");
 
+const mole1AmountSpan = document.getElementById("numOfMol1-span");
+var mole1Amount = 2;
+
 const spanAT = document.getElementById("at-span");
 
 // Variables for port 1
@@ -37,6 +40,10 @@ const timerBtnSpan = document.getElementById("timerBtn-span");
 
 // Ticking variables, timerTicking for starting/stopping interval on tick()
 const timerInput = document.getElementById("timer-input");
+
+// Variables for counting small molecules on left and right
+const countLSpan = document.getElementById("Mole-Left");
+const countRSpan = document.getElementById("Mole-Right");
 
 /********************************************
                 GLOBALS
@@ -76,8 +83,6 @@ gradientAT.addColorStop(1, "#c4092c");
 
 var port1Open = true;
 var port2Open = true;
-
-var molecule1Visible = true;
 
 var timerOn = false;
 var timerTicking;
@@ -200,6 +205,22 @@ function toggleAT() {
     updateDrawing();
 }
 
+// Counts the molecules on the left and right sides of the canvas
+function countMolecules() {
+    countLSpan.textContent = 0;
+    countRSpan.textContent = 0;
+    for (let i = 0; i < molecules.length; i++) {
+        if (molecules[i].moleculeType == moleculeEnum.smallMolecule) {
+            if (molecules[i].x < (canvasWidth / 2)) {
+                countLSpan.textContent++;
+            }
+            else {
+                countRSpan.textContent++;
+            }
+        }
+    }
+}
+
 // Toggles timer (and drawing) on/off
 function toggleTimer() {
     if (timerOn === false && timerInput.value > 0) {
@@ -207,12 +228,15 @@ function toggleTimer() {
         timerBtnSpan.textContent = "Pause";
         canvasDrawing = setInterval(drawCanvas, 100);
         timerTicking = setInterval(tick, 1000);
+        countLSpan.textContent = " ";
+        countRSpan.textContent = " ";
     }
     else {
         timerOn = false;
         timerBtnSpan.textContent = "Start";
         clearInterval(canvasDrawing);
         clearInterval(timerTicking);
+        countMolecules();
     }
 }
 
@@ -244,25 +268,6 @@ function togglePort2() {
     updateDrawing();
 }
 
-// Toggles big molecules on/off
-function toggleMolecule1() {
-    if (molecule1Visible === true) {
-        molecule1Visible = false;
-        mole1BtnSpan.textContent = "Include";
-    }
-    else {
-        molecule1Visible = true;
-        mole1BtnSpan.textContent = "Exclude";
-    }
-
-    // If simulation has not started, update the new molecule start locations
-    if (!timerOn) {
-        particleStartLocations();
-    }
-
-    updateDrawing();
-}
-
 /********************************************
     Temperature Functions and Globals
 ********************************************/
@@ -282,6 +287,32 @@ function addTemp() {
         speed = temp/5;
     }
     tempSpan.textContent = temp;
+}
+
+/********************************/
+
+function addMol1() {
+    if (mole1Amount < 4) {
+        mole1Amount = mole1Amount + 1;
+    }
+
+    mole1AmountSpan.textContent = mole1Amount;
+
+    if (!timerOn) {
+        particleStartLocations();
+    }
+}
+
+function minusMol1() {
+    if (mole1Amount > 0) {
+        mole1Amount = mole1Amount - 1;
+    }
+
+    mole1AmountSpan.textContent = mole1Amount;
+
+    if (!timerOn) {
+        particleStartLocations();
+    }
 }
 
 /********************************************
@@ -325,7 +356,7 @@ function addTemp() {
         if (portNum == "1" && port1Open === true && y > (145+radius) && y < (220-radius)) {
             return true; 
         }
-        else if (portNum == "2" && port2Open === true && y > (280+radius) && y < (335-radius)) {
+        else if (portNum == "2" && port2Open === true && y > (280+radius) && y < (355-radius)) {
             return true;
         }
         return false;
@@ -395,8 +426,8 @@ class Molecule {
                         if (this.y < (280 + radius)) {
                             this.y = 280 + radius;
                         }
-                        else if (this.y > (335 - radius)) {
-                            this.y = 335 - radius;
+                        else if (this.y > (355 - radius)) {
+                            this.y = 355 - radius;
                         }
                     }
                     // Move molecules away from the wall
@@ -427,7 +458,7 @@ class Molecule {
             }
         }
         // Separated big molecule checks
-        else if (this.moleculeType == moleculeEnum.bigMolecule && molecule1Visible === true) {
+        else if (this.moleculeType == moleculeEnum.bigMolecule) {
             radius = parseInt(mole1Radius);
             
             randomX = randomCo();
@@ -449,15 +480,13 @@ class Molecule {
     draw() {
         // Draws Large molecule type
         if (this.moleculeType == moleculeEnum.bigMolecule) {
-            if (molecule1Visible === true) {
-                // Linear gradient for style
-                let gradient = ctx.createLinearGradient(this.x-75, 0, this.x+100, 0);
-                gradient.addColorStop(0, "#540000");
-                gradient.addColorStop(0.5, "red");
-                gradient.addColorStop(1, "#ffac75");
+            // Linear gradient for style
+            let gradient = ctx.createLinearGradient(this.x-75, 0, this.x+100, 0);
+            gradient.addColorStop(0, "#540000");
+            gradient.addColorStop(0.5, "red");
+            gradient.addColorStop(1, "#ffac75");
                 
-                draw.circle(this.x, this.y, mole1Radius, gradient);
-            }
+            draw.circle(this.x, this.y, mole1Radius, gradient);
         } else {
             // Draws Small molecule type
             let gradient = ctx.createRadialGradient(this.x, this.y, mole2Radius*(2/3), this.x, this.y, mole2Radius*(2/15));
@@ -475,18 +504,65 @@ function particleStartLocations() {
         // Clear array
         molecules = [];
 
-        // puts the two big molecules in the first two slots
-        molecules = [new Molecule(moleculeEnum.bigMolecule, 160, 125), new Molecule(moleculeEnum.bigMolecule, 160, 375)];
+        // Adds the large molecules
+        switch (mole1Amount) {
+            // One Large Molecule
+            case 1:
+                molecules = [new Molecule(moleculeEnum.bigMolecule, 160, 125)];
+                break;
+            // Two Large Molecules
+            case 2:
+                molecules = [new Molecule(moleculeEnum.bigMolecule, 160, 125), new Molecule(moleculeEnum.bigMolecule, 160, 375)];
+                break;
+            // Three Large Molecules
+            case 3:
+                molecules = [new Molecule(moleculeEnum.bigMolecule, 160, 100), new Molecule(moleculeEnum.bigMolecule, 160, 250), new Molecule(moleculeEnum.bigMolecule, 160, 400)];
+                break;
+            // Four Large Molecules
+            case 4:
+                molecules = [new Molecule(moleculeEnum.bigMolecule, 70, 70), new Molecule(moleculeEnum.bigMolecule, 70, 425),
+                                new Molecule(moleculeEnum.bigMolecule, 250, 70), new Molecule(moleculeEnum.bigMolecule, 250, 425)];
+                break;
+            default:
+                break;
+        }
 
-        // iterates over rows (r) and columns (c)
+
+        // Populates the molecule table with small molecules, removes extra small molecules to prevent overlap
         for (let r = 0; r < 10; r++) {
             for (let c = 0; c < 7; c++) {
                 // adds a small molecule at a specific interval
                 molecules.push(new Molecule(moleculeEnum.smallMolecule, (25 + (c * 45)), (25 + (r * 50))));
 
-                // removes small molecule if near the big one
-                if (molecule1Visible && (2 <= c && c <= 4) && ((1 <= r && r <= 3) || (6 <= r && r <= 8))) {
-                    molecules.pop();
+                if (!(mole1Amount == 0)) {
+                    switch (mole1Amount) {
+                        case 1:
+                            // removes small molecule if near the big one
+                            if ((2 <= c && c <= 4) && ((1 <= r && r <= 3))) {
+                                molecules.pop();
+                            }
+                            break;
+                        case 2:
+                            // removes small molecule if near the big ones
+                            if ((2 <= c && c <= 4) && ((1 <= r && r <= 3) || (6 <= r && r <= 8))) {
+                                molecules.pop();
+                            }
+                            break;
+                        case 3:
+                             // removes small molecule if near the big ones
+                            if ((2 <= c && c <= 4) && ((1 <= r && r <= 3) || (4 <= r && r <= 6) || (6 <= r && r <= 8))) {
+                                molecules.pop();
+                            }
+                            break;
+                        case 4:
+                            // removes small molecule if near the big ones
+                            if (((0 <= c && c <= 2) || (4 <= c && c <= 6)) && ((0 <= r && r <= 2) || (7 <= r && r <= 9))) {
+                                molecules.pop();
+                            }
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
         }

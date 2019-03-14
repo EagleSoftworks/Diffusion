@@ -25,6 +25,14 @@ h2 {
     color: white;
 }
 
+h3 {
+    color: white;
+    font-weight: normal;
+    margin-top: 0;
+    margin-left: 20px;
+    margin-right: 10px;
+}
+
 p {
     color: black;
     font-size: 18px;
@@ -47,15 +55,26 @@ button {
     margin: 0 auto;
 }
 
+span {
+    font-weight: bold;
+}
+
 #titleCanvasDiv {
     width: 760px;
     min-height: 625px;
     float: left;
+    /*background-color: orange;*/
 }
 
 #titlesDiv {
     height: 125px;
-    max-height: 125px;
+    max-height: 100px;
+    /*background-color: purple;*/
+}
+
+#spacerDiv {
+    width: 750px; 
+    height: 25px;
 }
 
 .border {
@@ -82,7 +101,7 @@ button {
 .row {
     width: 245px;
     float: left;
-    margin-top: 20px;
+    margin-top: 10px;
 }
 
 #timer-input {

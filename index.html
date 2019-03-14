@@ -5,6 +5,7 @@
 <html lang="en">
     <head>
         <link rel="stylesheet" type="text/css" href="styles.css">
+        <link rel="icon" href="https://image.flaticon.com/icons/png/512/40/40390.png">
         <title>Molecular Diffusion Simulation</title>
     </head>
     
@@ -12,19 +13,32 @@
         <div id="mainPage">
             <div id="titleCanvasDiv">
                 <div id="titlesDiv">
-                	<h1>Under Construction</h1>
-                	<h2>Molecular Diffusion Simulation</h2>
+                    <div style="width:750px; height:25px;"></div>
+                	<h1>Molecular Diffusion Simulation</h1>
+                	
+                	<div style="width:750px; margin-top:10px;">
+                        <h3 style="float: left; font-size: 18px;">Left Molecules: <span id="Mole-Left"> </span></h3>
+                        <h3 style="float: right; font-size: 18px;">Right Molecules: <span id="Mole-Right"> </span></h3>
+                	</div>
                 </div>
                 
                 <canvas id="myCanvas" class="border" width="750px" height="500px"> </canvas> 
+                
+                <div style="width: 750px;">
+                    <h3 style="float: left; font-size: 14px;">Chani Mores & Kate Keefe</h3>
+                    <h3 style="float: right; font-size: 14px;">3/14/2019</h3>
+                </div>
             </div>
             
             <div id="buttonShelf" class="border">
                 <div class="row">
-                    <button onclick="toggleMolecule1()"><span id="mole1Visible-span">Exclude</span> Molecule 1</button>
-                    <p>Molecule 1 Size: <span id="mole1-span">40</span>px</p>
+                    <p># of Red Molecule: <span id="numOfMol1-span">2</span></p>
+                    <button onclick="minusMol1()">-</button>
+                    <button onclick="addMol1()">+</button>
+                    
+                    <p>Red Molecule Size: <span id="mole1-span">40</span>px</p>
                     <input id="mole1-slider" type="range" min="30" value="40" max="50">
-                    <p>Molecule 2 Size: <span id="mole2-span">15</span>px</p>
+                    <p>Green Molecule Size: <span id="mole2-span">15</span>px</p>
                     <input id="mole2-slider" type="range" min="5" value="15" max="25">
                     <p>Temp: <span id="temp-span">50</span>&deg;C</p>
                     <button onclick="minusTemp()">-</button>
