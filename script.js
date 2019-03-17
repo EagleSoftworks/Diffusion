@@ -41,6 +41,10 @@ const timerBtnSpan = document.getElementById("timerBtn-span");
 // Ticking variables, timerTicking for starting/stopping interval on tick()
 const timerInput = document.getElementById("timer-input");
 
+// Variables for counting small molecules on left and right
+const countLSpan = document.getElementById("Mole-Left");
+const countRSpan = document.getElementById("Mole-Right");
+
 /********************************************
                 GLOBALS
 ********************************************/
@@ -201,6 +205,22 @@ function toggleAT() {
     updateDrawing();
 }
 
+// Counts the molecules on the left and right sides of the canvas
+function countMolecules() {
+    countLSpan.textContent = 0;
+    countRSpan.textContent = 0;
+    for (let i = 0; i < molecules.length; i++) {
+        if (molecules[i].moleculeType == moleculeEnum.smallMolecule) {
+            if (molecules[i].x < (canvasWidth / 2)) {
+                countLSpan.textContent++;
+            }
+            else {
+                countRSpan.textContent++;
+            }
+        }
+    }
+}
+
 // Toggles timer (and drawing) on/off
 function toggleTimer() {
     if (timerOn === false && timerInput.value > 0) {
@@ -208,12 +228,15 @@ function toggleTimer() {
         timerBtnSpan.textContent = "Pause";
         canvasDrawing = setInterval(drawCanvas, 100);
         timerTicking = setInterval(tick, 1000);
+        countLSpan.textContent = " ";
+        countRSpan.textContent = " ";
     }
     else {
         timerOn = false;
         timerBtnSpan.textContent = "Start";
         clearInterval(canvasDrawing);
         clearInterval(timerTicking);
+        countMolecules();
     }
 }
 
@@ -333,7 +356,7 @@ function minusMol1() {
         if (portNum == "1" && port1Open === true && y > (145+radius) && y < (220-radius)) {
             return true; 
         }
-        else if (portNum == "2" && port2Open === true && y > (280+radius) && y < (335-radius)) {
+        else if (portNum == "2" && port2Open === true && y > (280+radius) && y < (355-radius)) {
             return true;
         }
         return false;
@@ -403,8 +426,8 @@ class Molecule {
                         if (this.y < (280 + radius)) {
                             this.y = 280 + radius;
                         }
-                        else if (this.y > (335 - radius)) {
-                            this.y = 335 - radius;
+                        else if (this.y > (355 - radius)) {
+                            this.y = 355 - radius;
                         }
                     }
                     // Move molecules away from the wall
