@@ -228,8 +228,8 @@ function toggleTimer() {
         timerBtnSpan.textContent = "Pause";
         canvasDrawing = setInterval(drawCanvas, 100);
         timerTicking = setInterval(tick, 1000);
-        countLSpan.textContent = " ";
-        countRSpan.textContent = " ";
+        countLSpan.textContent = "";
+        countRSpan.textContent = "";
     }
     else {
         timerOn = false;
