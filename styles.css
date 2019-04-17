@@ -61,14 +61,14 @@ span {
 
 #titleCanvasDiv {
     width: 760px;
-    min-height: 625px;
+    height: 625px;
     float: left;
     /*background-color: orange;*/
 }
 
 #titlesDiv {
     height: 125px;
-    max-height: 100px;
+    /*max-height: 100px;*/
     /*background-color: purple;*/
 }
 
